@@ -1,0 +1,32 @@
+{
+  "connection": "default",
+  "collectionName": "room",
+  "info": {
+    "name": "room",
+    "description": "Объект номера в Вилле."
+  },
+  "options": {
+    "timestamps": true
+  },
+  "attributes": {
+    "name": {
+      "unique": true,
+      "required": true,
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "images": {
+      "collection": "file",
+      "via": "related",
+      "plugin": "upload"
+    },
+    "priceInfo": {
+      "type": "json"
+    },
+    "descriptionHeader": {
+      "type": "string"
+    }
+  }
+}

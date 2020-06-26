@@ -1,0 +1,19 @@
+{
+  "defaultConnection": "default",
+  "connections": {
+    "default": {
+      "connector": "strapi-hook-mongoose",
+      "settings": {
+        "client": "mongo",
+        "host": "127.0.0.1",
+        "port": 27017,
+        "database": "villa-db",
+        "username": "Berdorge",
+        "password": "Alivenumber5!"
+      },
+      "options": {
+        "authenticationDatabase": "admin"
+      }
+    }
+  }
+}

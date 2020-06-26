@@ -1,0 +1,22 @@
+@import 'foundation/index';
+
+@include reset-all;
+
+html {
+  font-size: calc(1vw + 1vh);
+  font-family: pangolin;
+  color: $lapis;
+  overflow-x: hidden;
+}
+
+.big {
+  font-size: 1.5rem;
+}
+
+.humiliated {
+  font-size: .5rem;
+}
+
+.invisible {
+  opacity: 0;
+}

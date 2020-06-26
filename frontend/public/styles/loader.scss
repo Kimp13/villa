@@ -1,0 +1,37 @@
+@import 'foundation/variables';
+
+.loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: opacity .6s ease;
+  counter-reset: loader;
+  &-part {
+    counter-increment: loader;
+    background: $lapis;
+    margin: 1rem;
+    width: clamp(2rem, 4rem, 2vw);
+    height: clamp(2rem, 4rem, 2vw);
+    border-radius: 50%;
+    animation-name: wiggle;
+    animation-fill-mode: both;
+    animation-iteration-count: infinite;
+  }
+}
+
+@keyframes wiggle {
+  20% {
+    transform: none;
+  } 40% {
+    transform: translateY(-200%);
+  } 60% {
+    transform: translateY(200%);
+  } 80% {
+    transform: none;
+  }
+}

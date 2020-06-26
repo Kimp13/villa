@@ -1,0 +1,20 @@
+{
+  "dependencies": {
+    "@zeit/next-sass": "^1.0.1",
+    "next": "^9.4.4",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1"
+  },
+  "scripts": {
+    "dev": "next",
+    "build": "next build",
+    "start": "next start"
+  },
+  "devDependencies": {
+    "autoprefixer": "^9.8.3",
+    "gulp": "^4.0.2",
+    "gulp-dest": "^0.2.3",
+    "gulp-postcss": "^8.0.0",
+    "gulp-sass": "^4.1.0"
+  }
+}
