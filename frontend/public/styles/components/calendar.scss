@@ -1,5 +1,9 @@
 @import '../foundation/variables';
 
+button {
+  font-family: inherit;
+}
+
 .calendar {
   position: fixed;
   background: white;
@@ -93,6 +97,10 @@
     }
     &.booked {
       color: $pinkred;
+    }
+    &.chosen {
+      color: white;
+      background: $lapis;
     }
   }
   &-body {

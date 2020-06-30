@@ -37,7 +37,6 @@ export async function getServerSideProps({ params }) {
       else if (a.month !== b.month) return a.month - b.month;
       else return a.day - b.day;
     });
-    console.log(bookings);
     return {
       props: {
         room: room,
@@ -73,7 +72,7 @@ export default ({ room, serverTime, bookings, convertNumberToMonth }) => (
   <>
     <Head>
       <title>
-        {room.name + ' | Villa Guest House'}
+        {room.name + ' | Villa Guest House на Фиоленте'}
       </title>
     </Head>
     <IntroductionDiv content={room} />

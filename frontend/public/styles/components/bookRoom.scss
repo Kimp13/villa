@@ -1,7 +1,7 @@
 @import '../foundation/variables';
 
 .book-room {
-  flex: 250px 1;
+  flex: 500px 1;
   h2 {
     text-align: center;
   }
@@ -32,5 +32,11 @@
         }
       }
     }
+  }
+}
+
+@media all and (orientation: landscape) {
+  .book-room {
+    order: 1;
   }
 }

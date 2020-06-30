@@ -1,7 +1,7 @@
 @import '../foundation/variables';
 
 .room-prices {
-  flex: 500px 2;
+  flex: 250px 2;
   h2 {
     text-align: center;
   }
@@ -23,5 +23,11 @@
         content: ' ₽';
       }
     }
+  }
+}
+
+@media all and (orientation: landscape) {
+  .room-prices {
+    order: 2;
   }
 }

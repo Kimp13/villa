@@ -10,10 +10,31 @@ export default class RoomPrices extends React.Component {
   }
 
   render() {
-    let columns = [<th key={0}>Количество людей</th>], rows = [], prices = [], pricesKeys = [];
+    let columns = [<th key={0}>Количество гостей</th>], rows = [], prices = [], pricesKeys = [];
+    pricesKeys = Object.keys(this.prices[0].prices);
+    for (let i = 0; i < pricesKeys.length; i += 1) {
+      columns.push(
+        <th key={i + 1}>
+          {pricesKeys[i]}
+        </th>
+      );
+    }
+    rows.push(
+      <tr key={0}>
+        {columns}
+      </tr>
+    );
+    columns = [];
     if (this.prices.length === 1) {
-      columns.push(<th key={1}>Всё время</th>);
-      prices.push(this.prices[0]);
+      columns.push(<td key={0}>Всё время</td>);
+      for (let i = 0; i < pricesKeys.length; i += 1) {
+        columns.push(
+          <td key={i + 1}>
+            {this.prices[0].prices[pricesKeys[i]]}
+          </td>
+        );
+      }
+      rows.push(<tr key={1}>{columns}</tr>);
     } else {
       let i, text;
       for (i = 0; i < this.prices.length; i += 1) {
@@ -34,10 +55,19 @@ export default class RoomPrices extends React.Component {
             text += this.convertNumberToMonth[prices[i + 1].from - 2];
           }
         }
-        columns.push(<th key={i+1}>{text}</th>);
+        columns.push(<td key={0}>{text}</td>);
+        for (let j = 0; j < pricesKeys.length; j += 1) {
+          columns.push(
+            <td key={j + 1}>
+              {prices[i].prices[pricesKeys[j]]}
+            </td>
+          );
+        }
+        rows.push(<tr key={i + 1}>{columns}</tr>);
+        columns = [];
       }
       text = this.convertNumberToMonth[prices[i].from - 1];
-      if (prices[i].from + 1 !== prices[0].from) {
+      if (prices[i].from + 1 !== prices[i].from) {
         text += ' – ';
         if (prices[0].from === 1) {
           text += this.convertNumberToMonth[11];
@@ -45,27 +75,16 @@ export default class RoomPrices extends React.Component {
           text += this.convertNumberToMonth[prices[0].from - 2];
         }
       }
-      columns.push(<th key={i+1}>{text}</th>);
-    }
-    prices = prices.map(price => price.prices);
-    pricesKeys = Object.keys(prices[0]);
-    rows.push(
-      <tr key={0}>
-        {columns}
-      </tr>
-    );
-    for (let i = 0; i < pricesKeys.length; i += 1) {
-      columns = [];
-      columns.push(<td key={0}>{pricesKeys[i]}</td>)
-      for (let j = 0; j < prices.length; j += 1) {
-        columns.push(<td key={j+1}>{prices[j][pricesKeys[i]]}</td>);
+      columns.push(<td key={0}>{text}</td>);
+      for (let j = 0; j < pricesKeys.length; j += 1) {
+        columns.push(
+          <td key={j + 1}>
+            {prices[i].prices[pricesKeys[j]]}
+          </td>
+        );
       }
-      rows.push(
-        <tr key={i+1}>
-          {columns}
-        </tr>
-      );
-    } 
+      rows.push(<tr key={i + 1}>{columns}</tr>);
+    }
     return (
       <div className="room-prices">
         <h2>
