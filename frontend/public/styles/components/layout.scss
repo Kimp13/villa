@@ -1,9 +1,9 @@
-@import 'foundation/index';
+@import '../foundation/index';
 
 @include reset-all;
 
 html {
-  font-size: calc(1vw + 1vh);
+  font-size: 2vh;
   font-family: pangolin;
   color: $lapis;
   overflow-x: hidden;
@@ -19,4 +19,10 @@ html {
 
 .invisible {
   opacity: 0;
+}
+
+@media all and (orientation: landscape) {
+  html {
+    font-size: calc(1vw + 1vh);
+  }
 }

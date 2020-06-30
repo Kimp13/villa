@@ -1,0 +1,26 @@
+{
+  "connection": "default",
+  "collectionName": "",
+  "info": {
+    "name": "news",
+    "description": "Все новости, которые происходят в Вилле или около неё :)"
+  },
+  "options": {
+    "timestamps": true
+  },
+  "attributes": {
+    "header": {
+      "required": true,
+      "type": "string"
+    },
+    "text": {
+      "required": true,
+      "type": "text"
+    },
+    "attachments": {
+      "collection": "file",
+      "via": "related",
+      "plugin": "upload"
+    }
+  }
+}

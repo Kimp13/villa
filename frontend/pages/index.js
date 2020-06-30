@@ -1,48 +1,23 @@
 import React from "react";
+import Head from "next/head";
 import Layout from "../components/Layout";
 import IntroductionDiv from "../components/IntroductionDiv";
+import Rooms from "../components/Rooms";
 import Loader from "../components/Loader";
 import { getFullLink, getAPIResponse } from "../libraries/requests";
 
 import "../public/styles/index.scss";
 
-async function getStaticProps() {
-  let backgrounds = await getAPIResponse('/blobs', [{key: 'relation', value: 'background'}]);
+async function getServerSideProps() {
+  let main = await getAPIResponse('/rooms', [{key: 'name', value: 'Villa'}]),
+      rooms = await getAPIResponse('/rooms', [{key: 'isUtility', value: false}]),
+      news = [];
   return {
     props: {
-      backgrounds,
-    },
-  }
-}
-
-class Rooms extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      rooms: []
-    };
-  }
-
-  render() {
-    if (this.state) {
-      let rooms = Array();
-      for(let room of this.state.rooms) {
-        let photos = Array();
-        for(let image of room.images) {
-          photos.push(getFullLink(image.url));
-        }
-        rooms.push(<Room name={room.name} description={room.description} photos={photos} priceInfo={room.priceInfo} />);
-      }
-      return (
-        <div className="rooms-container">
-          <h2>
-            Наши номера
-          </h2>
-          {rooms}
-        </div>
-      )
+      main: main[0],
+      rooms: rooms,
+      news: news
     }
-    return null;
   }
 }
 
@@ -61,48 +36,21 @@ class News extends React.Component {
   }
 }
 
-class AsyncWrapper extends React.Component {
-  constructor(props) {
-    super(props);
-    this.i = 0;
-    let ready = false, backgrounds = Array(),
-        query = [
-          {
-            key: 'relation',
-            value: 'background'
-          }
-        ]
+export { getServerSideProps };
 
-    getStaticProps()
-      .then(data => {
-        for (let background of data.props.backgrounds) {
-          backgrounds.push(getFullLink(background.self.url));
-        }
-        this.setState({ready: true, backgrounds: backgrounds});
-      });
-    
-  }
-
-  render() {
-    if (this.state !== null) {
-      let content = {
-        header: 'Гестхаус Villa на Фиоленте',
-        description: 'Ну что рассказать? Домик. Просто домик, в котором живут его хозяева вместе с гостями, которые, в свою очередь, платят денежки :)'
-      }
-      return (
-        <React.Fragment>
-          <IntroductionDiv backgrounds={this.state.backgrounds} content={content}/>
-          <div className="content-flex-wrapper">
-            <Rooms />
-            <News />
-          </div>
-        </React.Fragment>
-      );
-    }
-    return <Loader animationDuration='1.6' />;
-  }
-}
-
-export { getStaticProps };
-
-export default () => <AsyncWrapper hello="world!" />;
+export default ({ main, rooms, news }) => {
+  return (
+    <>
+      <Head>
+        <title>
+          Главная | Villa Guest House
+        </title>
+      </Head>
+      <IntroductionDiv content={main}/>
+      <div className="content-flex-wrapper">
+        <Rooms content={rooms} />
+        <News content={news} />
+      </div>
+    </>
+  );
+};

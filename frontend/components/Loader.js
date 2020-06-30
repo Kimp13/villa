@@ -1,7 +1,7 @@
 import React from "react";
 import Head from "next/head";
 
-import "../public/styles/loader.scss";
+import "../public/styles/components/loader.scss";
 
 export default class Loader extends React.Component {
   constructor(props) {

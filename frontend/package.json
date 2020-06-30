@@ -1,12 +1,13 @@
 {
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.13.1",
     "@zeit/next-sass": "^1.0.1",
     "next": "^9.4.4",
     "react": "^16.13.1",
     "react-dom": "^16.13.1"
   },
   "scripts": {
-    "dev": "next",
+    "dev": "next -p 80",
     "build": "next build",
     "start": "next start"
   },

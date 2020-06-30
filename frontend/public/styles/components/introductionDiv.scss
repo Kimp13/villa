@@ -1,0 +1,71 @@
+@import '../foundation/variables';
+
+.introduction {
+  overflow-y: hidden;
+  position: relative;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  &-content {
+    position: relative;
+    background: white;
+    padding: 1rem;
+    border-radius: 1rem;
+    max-width: 75%;
+    box-shadow: 0 0 .33rem $lapis;
+    transition: transform .6s ease, box-shadow .3s ease;
+    &:hover {
+      box-shadow: 0 0 1rem $lapis;
+    }
+    h1 {
+      margin: 0 4rem 1rem 0;
+      .introduction-content-close {
+        font-size: 1.25rem;
+        color: $pinkred;
+        position: absolute;
+        top: .2rem;
+        right: .4rem;
+        opacity: .4;
+        transition: opacity .3s ease;
+        &:hover {
+          cursor: pointer;
+          opacity: 1;
+        }
+      }
+      & + * {
+        text-align: justify;
+      }
+    }
+    &.hidden {
+      transform: translateY(100vh);
+    }
+  }
+  .introduction-content-open {
+    transition: transform .6s ease;
+    position: absolute;
+    top: 100%;
+    left: calc(50% - 1rem);
+    text-align: center;
+    background: white;
+    border-radius: .5rem .5rem 0 0;
+    color: $lapis;
+    font-size: 1.5rem;
+    width: 2rem;
+    height: 2rem;
+    transform: translateY(-90%);
+    & > * {
+      transition: opacity .3s ease;
+      opacity: .4;
+    }
+    &.hidden {
+      transform: none;
+    }
+    &:hover {
+      cursor: pointer;
+      & > * {
+        opacity: 1;
+      }
+    }
+  }
+}

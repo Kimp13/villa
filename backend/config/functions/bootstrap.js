@@ -9,5 +9,5 @@
  */
 
 module.exports = cb => {
-  cb();
+  return new Promise(console.log('Hello!'));
 };

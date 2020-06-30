@@ -27,6 +27,14 @@
     },
     "descriptionHeader": {
       "type": "string"
+    },
+    "isUtility": {
+      "required": true,
+      "type": "boolean"
+    },
+    "bookings": {
+      "collection": "booking",
+      "via": "room"
     }
   }
 }

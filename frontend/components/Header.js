@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import "../public/styles/header.scss";
+import "../public/styles//components/header.scss";
 
 export default class Header extends React.Component {
   constructor(props) {
@@ -45,9 +45,6 @@ export default class Header extends React.Component {
               На главную
             </p>
           </a>
-        </Link>
-        <Link href="/about">
-          <a>О Вилле</a>
         </Link>
         <Link href="/route">
           <a>Как добраться</a>

@@ -3,6 +3,13 @@ import Layout from "../components/Layout";
 import React from "react";
 import App, { Container } from "next/app";
 
+import '@fortawesome/fontawesome-free/js/fontawesome';
+import '@fortawesome/fontawesome-free/js/solid';
+import '@fortawesome/fontawesome-free/js/regular';
+import '@fortawesome/fontawesome-free/js/brands';
+
+//
+
 export default class MyApp extends App {
   static async getInitialProps({ Component, router, ctx }) {
     let pageProps = {};
@@ -16,11 +23,10 @@ export default class MyApp extends App {
 
   render() {
     const { Component, pageProps } = this.props;
-    console.log(this.props);
     let isAuthenticated = false;
     return (
       <Container>
-        <Layout isAuthenticated={isAuthenticated} {...pageProps}>
+        <Layout {...pageProps}>
           <Component {...pageProps}/>
         </Layout>
       </Container>

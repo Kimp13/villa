@@ -1,0 +1,12 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/getTime",
+      "handler": "Time.find",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

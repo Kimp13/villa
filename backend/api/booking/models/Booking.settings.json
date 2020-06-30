@@ -1,0 +1,25 @@
+{
+  "connection": "default",
+  "collectionName": "",
+  "info": {
+    "name": "booking",
+    "description": "Бронирования на сайте."
+  },
+  "options": {
+    "timestamps": true
+  },
+  "attributes": {
+    "from": {
+      "required": true,
+      "type": "date"
+    },
+    "to": {
+      "required": true,
+      "type": "date"
+    },
+    "room": {
+      "model": "room",
+      "via": "bookings"
+    }
+  }
+}
