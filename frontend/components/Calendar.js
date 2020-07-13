@@ -1,6 +1,6 @@
 import React from "react";
 
-import "../public/styles/components/calendar.scss";
+import "../public/styles/components/calendar.module.scss";
 
 export default class Calendar extends React.Component {
   constructor(props) {

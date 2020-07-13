@@ -1,0 +1,52 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/anonymoususers",
+      "handler": "Anonymoususer.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/anonymoususers/count",
+      "handler": "Anonymoususer.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/anonymoususers/:_id",
+      "handler": "Anonymoususer.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/anonymoususers",
+      "handler": "Anonymoususer.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/anonymoususers/:_id",
+      "handler": "Anonymoususer.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/anonymoususers/:_id",
+      "handler": "Anonymoususer.destroy",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

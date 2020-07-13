@@ -5,28 +5,13 @@ import BackgroundWithSwitchers from "../components/BackgroundWithSwitchers.js";
 import { getFullLink } from "../libraries/requests";
 import { shortenTextTo } from "../libraries/texts";
 
-import "../public/styles/components/rooms.scss";
+import "../public/styles/components/rooms.module.scss";
 
 class Room extends React.Component {
   constructor(props) {
     super(props);
     this.name = props.name;
     this.description = shortenTextTo(this.props.description, 100);
-    this.photos = props.photos;
-    this.photosWrapper = React.createRef();
-  }
-
-  componentDidMount() {
-    this.photosWrapper.current.style.height = this.photosWrapper.current.getBoundingClientRect().width * 0.8 + 'px';
-    window.addEventListener('resize', () => {
-      try {
-        this.setState({
-          photosWrapperHeight: this.photosWrapper.current.getBoundingClientRect().width * 0.8 + 'px'
-        });
-      } catch (e) {
-        console.log(e);
-      }
-    });
   }
 
   render() {
@@ -35,8 +20,8 @@ class Room extends React.Component {
         <h3>
           {this.name}
         </h3>
-        <div className="room-photos-wrapper" ref={this.photosWrapper} style={this.state ? {height: this.state.photosWrapperHeight} : {}}>
-          <BackgroundWithSwitchers backgrounds={this.photos} />
+        <div className="room-photos-wrapper">
+          <BackgroundWithSwitchers backgrounds={this.props.photos} />
         </div>
         <p className="room-description">
           {this.description}

@@ -1,0 +1,57 @@
+@import '../foundation/variables';
+
+.book-room {
+  flex: 500px 1;
+  h2 {
+    text-align: center;
+  }
+  form {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    
+    .date-submit, .input-date {
+      border: .2rem solid $lapis;
+      border-radius: 1rem;
+      padding: 0 .5rem;
+      margin: .5rem;
+    }
+
+    .input-date {
+      .fa-caret-up, .fa-caret-down {
+        position: relative;
+        top: .125rem;
+        margin: 0 0 0 .3rem;
+        font-size: 1.25rem;
+        transition: transform .3s ease;
+      }
+      &.clickable {
+        &:hover {
+          cursor: pointer;
+        }
+      }
+      &.turned {
+        .fa-caret-down {
+          transform: rotateZ(180deg);
+        }
+      }
+    }
+    .date-submit {
+      font-size: 1rem;
+      font-family: inherit;
+      color: $lapis;
+      transition: all .3s ease;
+      &:hover {
+        cursor: pointer;
+        background: $lapis;
+        color: white;
+      }
+    }
+  }
+}
+
+@media all and (orientation: landscape) {
+  .book-room {
+    order: 1;
+  }
+}

@@ -1,0 +1,33 @@
+@import '../foundation/index';
+
+@include reset-all;
+
+html {
+  font-size: 2vh;
+  font-family: pangolin;
+  color: $lapis;
+  overflow-x: hidden;
+}
+
+.big {
+  font-size: 1.5rem;
+}
+
+.humiliated {
+  font-size: .5rem;
+}
+
+.invisible {
+  opacity: 0;
+}
+
+svg {
+  width: 1.25rem;
+  vertical-align: middle;
+}
+
+@media all and (orientation: landscape) {
+  html {
+    font-size: calc(1vw + 1vh);
+  }
+}

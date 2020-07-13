@@ -2,7 +2,7 @@ import React from "react";
 
 import Calendar from "../components/Calendar";
 
-import "../public/styles/components/bookRoom.scss";
+import "../public/styles/components/bookRoom.module.scss";
 
 export default class BookRoom extends React.Component {
   constructor(props) {
@@ -15,13 +15,16 @@ export default class BookRoom extends React.Component {
     }
     this.calendarRef = React.createRef();
     this.showCalendar = this.showCalendar.bind(this);
+    this.book = this.book.bind(this);
   }
 
   showCalendar(event) {
     let target = event.target;
+
     while (target.nodeName.toLowerCase() !== 'div') {
       target = target.parentNode;
     }
+
     if (this.state.provoker === null) {
       this.setState({
         calendarShown: true,
@@ -39,17 +42,32 @@ export default class BookRoom extends React.Component {
     }
   }
 
+  book(event) {
+    event.preventDefault();
+    console.log('Бронирование с ' + this.state.from + ' по ' + this.state.to);
+    if (this.props.user.isAuthenticated) {
+
+    } else {
+      window.location.href = '/messages/welcome';
+    }
+  }
+
   render() {
-    let inputs = [], calendarStyle,
-        submitButton;
+    let inputs = [],
+        calendarStyle,
+        submitButton,
+        calendar;
 
     if (this.state.from && this.state.to) {
-      submitButton = <input type="submit" />;
+      submitButton = <input type="submit" className="date-submit" value="Забронировать" onClick={this.book} />;
     } else {
       submitButton = null;
     }
 
     if (this.state.provoker === null) {
+      calendar = (
+        <Calendar parentClass={this} bookings={this.props.bookings} convertNumberToMonth={this.props.convertNumberToMonth} target={this.state.provoker} show={this.state.calendarShown} from={this.props.from} to={this.props.to}/>
+      );
       inputs.push(
         <div key={0} className="from input-date clickable" onClick={this.showCalendar}>
           {this.state.from ? this.state.from : 'Дата заезда'}
@@ -62,33 +80,41 @@ export default class BookRoom extends React.Component {
           <i className="fas fa-caret-down" />
         </div>
       );
-    } else if (this.state.provoker.classList[0] === 'from') {
-      inputs.push(
-        <div key={0} className="from input-date clickable turned" onClick={this.showCalendar}>
-          {this.state.from ? this.state.from : 'Дата заезда'}
-          <i className="fas fa-caret-down" />
-        </div>
-      );
-      inputs.push(
-        <div key={1} className="to input-date">
-          {this.state.to ? this.state.to : 'Дата выезда'}
-          <i className="fas fa-caret-down" />
-        </div>
-      );
     } else {
-      inputs.push(
-        <div key={0} className="from input-date">
-          {this.state.from ? this.state.from : 'Дата заезда'}
-          <i className="fas fa-caret-down" />
+      calendar = (
+        <div className="calendar-wrapper">
+          <Calendar parentClass={this} bookings={this.props.bookings} convertNumberToMonth={this.props.convertNumberToMonth} target={this.state.provoker} show={this.state.calendarShown} from={this.props.from} to={this.props.to}/>
         </div>
       );
-      inputs.push(
-        <div key={1} className="to input-date clickable turned" onClick={this.showCalendar}>
-          {this.state.to ? this.state.to : 'Дата выезда'}
-          <i className="fas fa-caret-down" />
-        </div>
-      );
-    }
+      if (this.state.provoker.classList[0] === 'from') {
+        inputs.push(
+          <div key={0} className="from input-date clickable turned" onClick={this.showCalendar}>
+            {this.state.from ? this.state.from : 'Дата заезда'}
+            <i className="fas fa-caret-down" />
+          </div>
+        );
+        inputs.push(
+          <div key={1} className="to input-date">
+            {this.state.to ? this.state.to : 'Дата выезда'}
+            <i className="fas fa-caret-down" />
+          </div>
+        );
+      } else {
+        inputs.push(
+          <div key={0} className="from input-date">
+            {this.state.from ? this.state.from : 'Дата заезда'}
+            <i className="fas fa-caret-down" />
+          </div>
+        );
+        inputs.push(
+          <div key={1} className="to input-date clickable turned" onClick={this.showCalendar}>
+            {this.state.to ? this.state.to : 'Дата выезда'}
+            <i className="fas fa-caret-down" />
+          </div>
+        );
+      }
+    } 
+
     return (
       <div className="book-room">
         <h2>
@@ -96,7 +122,7 @@ export default class BookRoom extends React.Component {
         </h2>
         <form className="flex-book-form">
           {inputs}
-          <Calendar parentClass={this} bookings={this.props.bookings} convertNumberToMonth={this.props.convertNumberToMonth} target={this.state.provoker} show={this.state.calendarShown} from={this.props.from} to={this.props.to}/>
+          {calendar}
           {submitButton}
         </form>
       </div>

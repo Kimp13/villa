@@ -1,0 +1,48 @@
+@import "../foundation/variables";
+
+.switcher {
+  position: absolute;
+  top: calc(50% - 2rem);
+  width: clamp(2rem, 10%, 4rem);
+  height: 4rem;
+  background: transparent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 350%;
+  font-family: sans-serif;
+  color: $lapis;
+  background: white;
+  opacity: .6;
+  transition: all .3s ease;
+  &:hover {
+    cursor: pointer;
+    opacity: 1;
+  }
+  &.left {
+    left: 0;
+    padding-right: .5rem;
+  }
+  &.right {
+    right: 0;
+    padding-left: .5rem;
+  }
+}
+
+.bg-container {
+  position: absolute;
+  z-index: -1;
+  left: 0;
+  top: 0;
+  height: 100%;
+  .bg-image {
+    height: 100%;
+    width: auto;
+  }
+}
+
+@keyframes translateTo {
+  to {
+    transform: translateX(var(--translateTo, 0));
+  }
+}

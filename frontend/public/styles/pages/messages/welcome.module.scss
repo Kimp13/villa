@@ -1,0 +1,97 @@
+@import "../../foundation/variables";
+
+body {
+  height: auto;
+}
+
+.welcome {
+  overflow: hidden;
+  width: 80%;
+  max-width: 40rem;
+  border-radius: 1rem;
+  margin: 5rem auto 0;
+  box-shadow: 0 0 .2rem $lapis;
+  text-align: right;
+  transition: all .3s ease;
+  &:hover {
+    box-shadow: 0 0 .5rem $lapis;
+  }
+  &-button-backwards,
+  &-button-forwards {
+    color: $lapis;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  &-button-backwards {
+    display: block;
+    font-size: 1.5rem;
+    height: 1.5rem;
+    margin: .5rem 1rem;
+    opacity: .6;
+    transition: all .3s ease-out;
+    &:hover {
+      opacity: 1;
+      cursor: pointer;
+    }
+    &.inactive {
+      margin: 1rem 0 0;
+      height: 0;
+      color: grey;
+      transform: translateX(-100%) rotateZ(180deg);
+    }
+  }
+  &-button-forwards {
+    display: inline-block;
+    border: .1rem solid $lapis;
+    padding: .1rem .4rem;
+    margin: 1rem 5%;
+    border-radius: .5rem;
+    transition: all .3s ease;
+    &:hover {
+      cursor: pointer;
+      background: $lapis;
+      color: white;
+    }
+  }
+  &-form-container {
+    position: relative;
+    width: 100%;
+    .welcome-form {
+      display: flex;
+      flex-wrap: wrap;
+      width: 100%;
+      padding: 0 5%;
+      text-align: justify;
+      transition: transform .3s ease;
+      &.left,
+      &.right {
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+      &.left {
+        transform: translateX(-100%);
+      }
+      &.right {
+        transform: translateX(100%);
+      }
+      *:not(input) {
+        flex-basis: 100%;
+      }
+      p {
+        margin: .25rem 0;
+      }
+      input {
+        flex-grow: 1;
+        flex-basis: 10rem;
+        text-align: center;
+        color: $lapis;
+        border-bottom: .15rem solid $lapis;
+        font-size: 1rem;
+        font-family: inherit;
+        padding: .25rem .5rem;
+        margin: .5rem .25rem;
+      }
+    }
+  }
+}

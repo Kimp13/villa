@@ -37,7 +37,7 @@ module.exports = {
 
     return this.verify(token);
   },
-
+  
   issue: (payload, jwtOptions = {}) => {
     _.defaults(jwtOptions, defaultJwtOptions);
     return jwt.sign(

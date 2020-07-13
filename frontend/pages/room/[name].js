@@ -6,7 +6,7 @@ import IntroductionDiv from "../../components/IntroductionDiv";
 import RoomPrices from "../../components/RoomPrices";
 import BookRoom from "../../components/BookRoom";
 
-import "../../public/styles/room.scss";
+import "../../public/styles/pages/room/index.module.scss";
 
 export async function getServerSideProps({ params }) {
   let jwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZWY3MTlkNjExOTA1ZjE1NGM2ODdlYWEiLCJpYXQiOjE1OTMzNzc3OTksImV4cCI6MTU5NTk2OTc5OX0.Xy5Y1LMZ2FBfunMlH9vWBICLH-9mJNXk8FV3S5DSM6M';
@@ -55,7 +55,8 @@ export async function getServerSideProps({ params }) {
           'Октябрь',
           'Ноябрь',
           'Декабрь'
-        ]
+        ],
+        title: room.name
       }
     }
   }
@@ -68,7 +69,8 @@ export async function getServerSideProps({ params }) {
   }
 }
 
-export default ({ room, serverTime, bookings, convertNumberToMonth }) => (
+export default ({ room, serverTime, bookings, convertNumberToMonth, user }) => {
+  return (
   <>
     <Head>
       <title>
@@ -78,7 +80,7 @@ export default ({ room, serverTime, bookings, convertNumberToMonth }) => (
     <IntroductionDiv content={room} />
     <div className="content-flex-wrapper">
       <RoomPrices prices={room.priceInfo} convertNumberToMonth={convertNumberToMonth}/>
-      <BookRoom convertNumberToMonth={convertNumberToMonth} bookings={bookings} bookings={bookings} from={new SimpleDate(new Date(serverTime))} to={new SimpleDate(new Date('2020-12-31'))} />
+      <BookRoom user={user} convertNumberToMonth={convertNumberToMonth} bookings={bookings} bookings={bookings} from={new SimpleDate(new Date(serverTime))} to={new SimpleDate(new Date('2020-12-31'))} />
     </div>
   </>
-)
+)};

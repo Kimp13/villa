@@ -1,6 +1,6 @@
 import React from "react";
 
-import "../public/styles/components/roomPrices.scss";
+import "../public/styles/components/roomPrices.module.scss";
 
 export default class RoomPrices extends React.Component {
   constructor(props) {

@@ -1,55 +1,110 @@
 import React from "react";
 import Link from "next/link";
-import "../public/styles//components/header.scss";
+
+import "../public/styles/components/header.module.scss";
 
 export default class Header extends React.Component {
   constructor(props) {
     super(props);
+    this.state = {
+      opened: false
+    }
+    this.handleButtonClick = this.handleButtonClick.bind(this);
   }
 
   componentDidMount() {
-    window.previousScroll = 0;
-    window.addEventListener('scroll', this.handleScroll, true);
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('scroll', this.handleScroll);
-  }
-
-  handleScroll() {
-    const header = document.getElementById('header');
-    if (this.previousScroll > this.scrollY) {
-      if (header.classList.contains('hidden')) {
-        header.classList.remove('hidden');
+    let anchors = document.getElementById('header').querySelectorAll('a');
+    for (let anchor of anchors) {
+      if (anchor.classList.contains('underlined')) {
+        let underline = document.createElement('div'),
+            underlineText = document.createElement('p');
+        underline.classList.add('underline');
+        underlineText.innerHTML = anchor.innerHTML;
+        underline.append(underlineText);
+        anchor.append(underline);
       }
+    };
+  }
+
+  handleButtonClick() {
+    let header = document.querySelector('header');
+    if (this.state.opened) {
+      header.classList.remove('opened');
+      header.children[0].classList.remove('hidden');
+      header.children[1].classList.add('hidden');
+      this.setState({opened: false});
     } else {
-      if (!header.classList.contains('hidden')) {
-        header.classList.add('hidden');
-      }
+      header.classList.add('opened');
+      header.children[0].classList.add('hidden');
+      header.children[1].classList.remove('hidden');
+      this.setState({opened: true});
     }
-    this.previousScroll = this.scrollY;
   }
 
   render() {
-    return (
-      <div id="header">
-        <Link href="/">
-          <a>
-            <p className="big">
-              Villa
-            </p>
-            <p className="humiliated">
-              Guest House
-            </p>
-            <p className="humiliated">
-              На главную
-            </p>
+    let firstButtonClassName = 'header-open' + this.state.opened ? ' hidden' : '',
+        secondButtonClassName = 'header-close' + this.state.opened ? '' : ' hidden',
+        headerFunction = this.state.opened ? undefined : this.handleButtonClick,
+        firstLinks = [];
+
+    if (this.props.user.isAuthenticated) {
+      firstLinks.push(
+        <Link href="/messages" key={'a'}>
+          <a className="underlined" onClick={this.handleButtonClick}>
+            <i className="far fa-comments" />Сообщения
           </a>
         </Link>
-        <Link href="/route">
-          <a>Как добраться</a>
+      );
+      firstLinks.push(
+        <Link href="/auth/logout" key={'b'}>
+          <a className="underlined" onClick={this.handleButtonClick}>
+            <i className="fas fa-user-slash" />Выход
+          </a>
         </Link>
-      </div>
+      );
+    } else {
+      firstLinks.push(
+        <Link href="/auth?type=signin" as="/auth" key={'a'}>
+          <a className="underlined" onClick={this.handleButtonClick}>
+            <i className="fas fa-user-check" />Вход
+          </a>
+        </Link>
+      );
+    }
+
+    return (
+      <header onClick={headerFunction}>
+        <button className="header-open">
+          <i className="fas fa-bars" />
+          Меню
+        </button>
+        <button className="header-close hidden" onClick={this.handleButtonClick}>
+          <i className="fas fa-times" />
+        </button>
+        <nav id="header">
+          <div className="header-user-management">
+            {firstLinks}
+          </div>
+          <Link href="/">
+            <a className="header-logo" onClick={this.handleButtonClick}>
+                <i className="fas fa-sun" />
+                <span className="header-logo-main">
+                  B
+                </span>
+                <p className="big">
+                  Вилла
+                </p>
+            </a>
+          </Link>
+          <div className="header-villa-info">
+            <Link href="/routes">
+              <a className="underlined" onClick={this.handleButtonClick}>
+                <i className="fas fa-car-side" />Как добраться
+              </a>
+            </Link>
+          </div>
+        </nav>
+      </header>
     )
   }
 }

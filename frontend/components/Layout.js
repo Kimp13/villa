@@ -1,37 +1,35 @@
 import React from "react";
 import Head from "next/head";
 import Header from "../components/Header";
-import { Container } from "next/app";
 
-import "../public/styles/components/layout.scss";
+import "../public/styles/components/layout.module.scss";
 
 class Layout extends React.Component {
   constructor(props) {
     super(props);
-    this.title = props.title;
-  }
-  static async getInitialProps({ req }) {
-    let pageProps = {};
-    if (Component.getInitialProps) {
-      pageProps = await Component.getInitialProps(ctx);
-    }
-
-    return { pageProps };
   }
   render() {
-    const { children } = this.props;
+    const child = React.cloneElement(this.props.children, {user: this.props.user}),
+          title = this.props.title ?
+                    <title>
+                      {this.props.title + ' | Villa Guest House на Фиоленте'}
+                    </title> :
+                    null;
     return (
       <div>
         <Head>
+          {title}
           <meta charSet="utf-8" />
           <meta
             name="viewport"
             content="initial-scale=1.0, width=device-width"
           />
+          <link rel="icon" type="image/x-icon" href="favicon.ico" />
           <link href="https://fonts.googleapis.com/css2?family=Pangolin&display=swap" rel="stylesheet" />
+          <link href="https://fonts.googleapis.com/css2?family=Sail&display=swap" rel="stylesheet" /> 
         </Head>
-        <Header />
-        <Container>{children}</Container>
+        <Header user={this.props.user}/>
+        {child}
       </div>
     );
   }

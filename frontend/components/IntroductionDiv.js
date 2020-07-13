@@ -1,17 +1,14 @@
 import React from "react";
 import BackgroundWithSwitchers from '../components/BackgroundWithSwitchers.js'
 
-import "../public/styles/components/introductionDiv.scss";
+import "../public/styles/components/introductionDiv.module.scss";
 
 import { getFullLink } from "../libraries/requests.js";
-
-
 
 export default class IntroductionDiv extends React.Component {
   constructor(props) {
     super(props);
-    this.content = props.content;
-    this.backgrounds = this.content.images.map(imageInfo => getFullLink(imageInfo.url));
+    this.backgrounds = this.props.content.images.map(imageInfo => getFullLink(imageInfo.url));
     this.state = {background: this.backgrounds[0], index: 0};
     this.componentDidMount = this.componentDidMount.bind(this);
     this.hideContent = this.hideContent.bind(this);
@@ -39,13 +36,13 @@ export default class IntroductionDiv extends React.Component {
         <div className="introduction" onClick={this.switchBGs}>
           <div className="introduction-content">
             <h1>
-              {this.content.descriptionHeader}
+              {this.props.content.descriptionHeader}
               <button className="introduction-content-close" onClick={this.hideContent}>
                 ❌
               </button>
             </h1>
             <p>
-              {this.content.description}
+              {this.props.content.description}
             </p>
           </div>
           <button className="introduction-content-open hidden" onClick={this.showContent}>

@@ -1,0 +1,14 @@
+@import "../foundation/variables";
+
+.form-error {
+  background: $errorred;
+  color: white;
+  text-align: center;
+  opacity: .8;
+  padding: .25rem .5rem;
+  transition: opacity .3s ease;
+  &:hover {
+    cursor: pointer;
+    opacity: 1;
+  }
+}

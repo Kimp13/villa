@@ -1,0 +1,52 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/getUserByJWT",
+      "handler": "jwt.check",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/getAnonymousUser",
+      "handler": "anon.get",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/getMyConversations",
+      "handler": "conversations.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/getMyConversationsCount",
+      "handler": "conversations.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/getMyMessages",
+      "handler": "messages.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/getMyMessagesCount",
+      "handler": "messages.count",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

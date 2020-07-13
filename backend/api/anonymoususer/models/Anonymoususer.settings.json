@@ -1,0 +1,25 @@
+{
+  "connection": "default",
+  "collectionName": "",
+  "info": {
+    "name": "anonymoususer",
+    "description": "Пользователи, которые не зарегистрировались, а лишь ввели необходимую для бронирования информацию."
+  },
+  "options": {
+    "timestamps": true
+  },
+  "attributes": {
+    "name": {
+      "default": "Аноним",
+      "type": "string"
+    },
+    "surname": {
+      "default": "Анонимус",
+      "type": "string"
+    },
+    "phoneNumber": {
+      "required": true,
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "connection": "default",
+  "collectionName": "message",
+  "info": {
+    "name": "message",
+    "description": "Все сообщения на сайте."
+  },
+  "options": {
+    "timestamps": true
+  },
+  "attributes": {
+    "conversationId": {
+      "required": true,
+      "type": "string"
+    },
+    "authorId": {
+      "required": true,
+      "type": "string"
+    },
+    "attachments": {
+      "collection": "file",
+      "via": "related",
+      "plugin": "upload"
+    },
+    "type": {
+      "default": "normal",
+      "enum": [
+        "normal",
+        "booking"
+      ],
+      "required": true,
+      "type": "enumeration"
+    },
+    "text": {
+      "required": true,
+      "type": "text"
+    }
+  }
+}
