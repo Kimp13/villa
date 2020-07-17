@@ -2,7 +2,6 @@ let strapi = require('strapi');
 
 module.exports = {
   async get(ctx, next) {
-    console.log('anonie');
     try {
       let search = ctx.req.url.substring(ctx.req.url.indexOf('?') + 1),
           equalsSignIndex = search.indexOf('=');
@@ -20,5 +19,40 @@ module.exports = {
     } catch(e) {
       ctx.throw(401);
     }
+  },
+  async new(ctx) {
+    let { phoneNumber, name, surname, firstBooking } = ctx.request.body,
+        createQuery = {
+          phoneNumber
+        };
+
+    try {
+      firstBooking = JSON.parse(firstBooking);
+    } catch(e) {
+      firstBooking = false;
+    }
+
+    name ? createQuery.name = name : null;
+    surname ? createQuery.surname = surname : null;
+
+    const anon = await strapi.models.anonymoususer.create(createQuery);
+
+    const newConversation = await strapi.models.conversation.create({
+      participants: [
+        'anon' + anon.id,
+        'hello'
+      ]
+    });
+
+    if (firstBooking) {
+      const message = await strapi.models.message.create({
+        conversationId: newConversation.id,
+        authorId: 'anon' + anon.id,
+        type: 'booking',
+        text: firstBooking.from + '_' + firstBooking.to
+      });
+    }
+
+    console.log(newConversation);
   }
 }

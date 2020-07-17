@@ -1,8 +1,11 @@
-import Layout from "../components/Layout";
-
 import React from "react";
 import App from "next/app";
-import { getCookie } from "../libraries/cookies.js";
+
+import io from "../../backend/node_modules/socket.io-client/dist/socket.io.dev.js";
+
+import Layout from "../components/Layout";
+
+import { getCookie, setCookie } from "../libraries/cookies.js";
 import { getAPIResponse } from "../libraries/requests.js";
 
 import '@fortawesome/fontawesome-free/js/fontawesome';
@@ -12,68 +15,41 @@ import '@fortawesome/fontawesome-free/js/brands';
 
 export default class MyApp extends App {
   static async getInitialProps({ ctx }) {
-    let pageProps = {},
-        getAnonymousUser = async anonymousId => {
-          let userResponse = await getAPIResponse('/villa-user-management/getAnonymousUser', [
-            {
-              key: 'userId',
-              value: anonymousId
-            }
-          ]);
-          if(userResponse.length === 0) {
-            return {
-              isAuthenticated: false
-            }
-          } else {
-            return {
-              ...userResponse,
-              id: anonymousId,
-              isAuthenticated: true,
-              isAnonymous: true
-            }
-          }
-        },
-        getUserByJWT = async jwt => {
-          let userResponse = await getAPIResponse('/villa-user-management/getUserByJWT', [], jwt);
-          return userResponse.error ? {
-            isAuthenticated: false
-          } : {
-            ...userResponse._doc,
-            jwt,
-            isRoot: userResponse.isRoot,
-            isAuthenticated: true,
-            isAnonymous: false
-          };
-        };
-
-    let cookies = (ctx.req ? (ctx.req.headers.cookie || '') : ''),
-        jwt = getCookie('jwt', cookies),
-        anonymousId,
-        userResponse,
-        user;
-
-    if (jwt) {
-      user = await getUserByJWT(jwt);
-    } else {
-      anonymousId = getCookie('a', cookies);
-      if (anonymousId) {
-        user = await getAnonymousUser(anonymousId);
-      } else {
-        user = {
-          isAuthenticated: false
-        }
+    return {
+      pageProps: {},
+      user: {
+        isAuthenticated: false
       }
-    }
-    
-    return { pageProps, user };
+    };
+  }
+
+  constructor(props) {
+    super(props);
+    this.componentDidMount = this.componentDidMount.bind(this);
+  }
+
+  componentDidMount() {
+    const socket = io.connect('localhost:1337');
+    socket.on('user', user => {
+      socket.user = user;
+      this.setState({
+        socket
+      });
+    });
   }
 
   render() {
-    const { Component, pageProps, user } = this.props;
-    return (
-      <Layout user={user} {...pageProps}>
-        <Component {...pageProps}/>
-      </Layout>
-    );
+    if (this.state) {
+      let { Component, pageProps } = this.props,
+          socket = this.state.socket;
+
+      return (
+        <Layout socket={socket} {...pageProps}>
+          <Component {...pageProps}/>
+        </Layout>
+      );
+    } else {
+      return null;
+    }
   }
 }

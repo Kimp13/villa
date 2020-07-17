@@ -2,62 +2,61 @@ const strapi = require('strapi');
 
 module.exports = {
   async find(ctx) {
-    let search = ctx.req.url.substring(ctx.req.url.indexOf('?') + 1),
-        query = {},
-        params = search.split('&'),
-        skip,
-        limit;
+    try {
+      let body = ctx.request.body,
+          socket = strapi.io.sockets.connected[body.socketId],
+          conversationId = body.conversationId,
+          skip = body.skip || 0,
+          limit = body.limit || 50;
 
-    for (let i = 0; i < params.length; i += 1) {
-      let equalsSignIndex = params[i].indexOf('='),
-          key = params[i].substring(0, equalsSignIndex),
-          value = params[i].substring(equalsSignIndex + 1);
-      if (key === 'conversationId') {
-        query.conversationId = value;
-      } else if (key === 'from') {
-        skip = parseInt(value);
-      } else if (key === 'count') {
-        limit = parseInt(value);
-      } else {
-        ctx.throw(401);
-        return;
+      let findIndex = authorId => {
+        if (authorId === socket.userId) {
+          return 0;
+        } else {
+          let counter = 1;
+          for (let i = 0; i < conversation.participants.length; i += 1) {
+            if (conversation.participants[i] !== socket.userId) {
+              if (conversation.participants[i] === authorId) {
+                return counter;
+              }
+              counter += 1;
+            }
+          }
+        }
       }
-    }
 
-    if (!query.conversationId) {
-      ctx.throw(401);
-    }
+      let query = {conversationId};
 
-    let response = await strapi.models.message.find(query).limit(limit || 10).skip(skip || 0);
+      let conversation = await strapi.models.conversation.findOne({
+            id: conversationId
+          }),
+          response = await strapi.models.message.find(query)
+            .sort({
+              createdAt: -1
+            })
+            .limit(limit)
+            .skip(skip);
 
-    for (let i = 0; i < response.length; i += 1) {
-      response[i] = {
-        type: response[i].type,
-        text: response[i].text,
-        attachments: response[i].attachments
+      for (let i = 0; i < response.length; i += 1) {
+        response[i] = {
+          type: response[i].type,
+          text: response[i].text,
+          authorId: findIndex(response[i].authorId),
+          attachments: response[i].attachments
+        }
       }
-    }
 
-    ctx.send(JSON.stringify(response));
+      ctx.send(JSON.stringify(response));
+    } catch(e) {
+      ctx.send('');
+    }
   },
   async count(ctx) {
-    let search = ctx.req.url.substring(ctx.req.url.indexOf('?') + 1);
-
-    if (search.indexOf('&') !== -1) {
-      ctx.throw(401);
-    } else {
-      let equalsSignIndex = search.indexOf('='),
-          key = search.substring(0, equalsSignIndex);
-
-      if (key !== 'conversationId') {
-        ctx.throw(401);
-      } else {
-        let value = search.substring(equalsSignIndex + 1);
-        let response = await strapi.models.message.countDocuments({conversationId: value});
-        ctx.send(JSON.stringify({
-          count: response
-        }));
-      }
+    try {
+      let response = await strapi.models.message.countDocuments({conversationId: ctx.request.body});
+      ctx.send(response.toString());
+    } catch(e) {
+      ctx.send('');
     }
   }
 }

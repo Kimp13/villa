@@ -44,10 +44,13 @@ export default class BookRoom extends React.Component {
 
   book(event) {
     event.preventDefault();
-    console.log('Бронирование с ' + this.state.from + ' по ' + this.state.to);
     if (this.props.user.isAuthenticated) {
-
+      window.location.href = '/messages';
     } else {
+      window.localStorage.setItem('firstBooking', JSON.stringify({
+        from: this.state.from,
+        to: this.state.to
+      }));
       window.location.href = '/messages/welcome';
     }
   }

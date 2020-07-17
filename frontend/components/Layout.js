@@ -9,7 +9,7 @@ class Layout extends React.Component {
     super(props);
   }
   render() {
-    const child = React.cloneElement(this.props.children, {user: this.props.user}),
+    const child = React.cloneElement(this.props.children, {socket: this.props.socket}),
           title = this.props.title ?
                     <title>
                       {this.props.title + ' | Villa Guest House на Фиоленте'}
@@ -26,9 +26,9 @@ class Layout extends React.Component {
           />
           <link rel="icon" type="image/x-icon" href="favicon.ico" />
           <link href="https://fonts.googleapis.com/css2?family=Pangolin&display=swap" rel="stylesheet" />
-          <link href="https://fonts.googleapis.com/css2?family=Sail&display=swap" rel="stylesheet" /> 
+          <link href="https://fonts.googleapis.com/css2?family=Sail&display=swap" rel="stylesheet" />
         </Head>
-        <Header user={this.props.user}/>
+        <Header user={this.props.socket.user}/>
         {child}
       </div>
     );

@@ -70,7 +70,6 @@ class Welcome extends React.Component {
     window.addEventListener('keydown', (event) => {
       if (event.keyCode === 13) {
         event.preventDefault();
-        console.log(this.state.index, this.headers.length);
         if (this.state.index === this.headers.length - 1) {
           this.completeRegistration();
         } else {
@@ -105,7 +104,8 @@ class Welcome extends React.Component {
   completeRegistration() {
     if (this.checkCurrentForm()) {
       let forms = document.getElementsByClassName('welcome-form'),
-          requestBody;
+          requestBody = '',
+          firstBooking = window.localStorage.getItem('firstBooking');
       for (let i = 0; i < forms.length; i += 1) {
         for (let j = 0; j < forms[i].length; j += 1) {
           if (forms[i][j].value.length > 0) {
@@ -121,12 +121,20 @@ class Welcome extends React.Component {
             if (requestBody) {
               requestBody += '&' + key + '=' + value;
             } else {
-              requestBody = key + '=' + value;
+              requestBody += key + '=' + value;
             }
           }
         }
       }
-      fetch(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:1337' + '/anonymoususers', {
+
+      if (firstBooking) {
+        if (requestBody) {
+          requestBody += '&';
+        }
+        requestBody += '&firstBooking=' + encodeURI(firstBooking);
+      }
+
+      fetch(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:1337' + '/villa-user-management/initializeNewAnonymous', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
@@ -135,7 +143,7 @@ class Welcome extends React.Component {
       })
         .then(response => {
           if (!response.ok) {
-            alert('Произошла ошибка. Попробуйте позже.');
+            alert(requestBody);
             throw new Error();
           } else {
             return response.json();

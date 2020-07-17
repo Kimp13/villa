@@ -2,8 +2,8 @@
   "routes": [
     {
       "method": "GET",
-      "path": "/getUserByJWT",
-      "handler": "jwt.check",
+      "path": "/getUser",
+      "handler": "auth.getUser",
       "config": {
         "policies": []
       }
@@ -17,32 +17,24 @@
       }
     },
     {
-      "method": "GET",
-      "path": "/getMyConversations",
-      "handler": "conversations.find",
+      "method": "POST",
+      "path": "/initializeNewAnonymous",
+      "handler": "anon.new",
       "config": {
         "policies": []
       }
     },
     {
-      "method": "GET",
-      "path": "/getMyConversationsCount",
-      "handler": "conversations.count",
-      "config": {
-        "policies": []
-      }
-    },
-    {
-      "method": "GET",
-      "path": "/getMyMessages",
+      "method": "POST",
+      "path": "/getMessages",
       "handler": "messages.find",
       "config": {
         "policies": []
       }
     },
     {
-      "method": "GET",
-      "path": "/getMyMessagesCount",
+      "method": "POST",
+      "path": "/getMessagesCount",
       "handler": "messages.count",
       "config": {
         "policies": []
