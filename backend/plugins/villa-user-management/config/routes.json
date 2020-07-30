@@ -25,6 +25,22 @@
       }
     },
     {
+      "method": "GET",
+      "path": "/getConversations",
+      "handler": "conversations.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/getConversationsCount",
+      "handler": "conversations.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
       "method": "POST",
       "path": "/getMessages",
       "handler": "messages.find",

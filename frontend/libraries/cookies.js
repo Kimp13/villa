@@ -1,10 +1,12 @@
 function hasCookie(cookie) {
   let allCookies = document.cookie.split(';');
+  
   for (let i = 0; i < allCookies.length; i += 1) {
     if (allCookies[i].substring(0, allCookies[i].indexOf('=')).trim() === cookie) {
       return true;
     }
   }
+
   return false;
 }
 
@@ -16,13 +18,16 @@ export function getCookie(cookie, cookieString) {
   if (cookieString === undefined) {
     cookieString = document.cookie;
   }
+
   let allCookies = cookieString.split(';');
+
   for (let i = 0; i < allCookies.length;  i += 1) {
     let equalsSignIndex = allCookies[i].indexOf('=');
     if (allCookies[i].substring(0, equalsSignIndex).trim() === cookie) {
       return allCookies[i].substring(equalsSignIndex + 1);
     }
   }
+
   return null;
 }
 

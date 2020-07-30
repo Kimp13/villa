@@ -3,7 +3,7 @@
     {
       "method": "GET",
       "path": "/conversations",
-      "handler": "Conversation.find",
+      "handler": "conversation.find",
       "config": {
         "policies": []
       }
@@ -11,15 +11,15 @@
     {
       "method": "GET",
       "path": "/conversations/count",
-      "handler": "Conversation.count",
+      "handler": "conversation.count",
       "config": {
         "policies": []
       }
     },
     {
       "method": "GET",
-      "path": "/conversations/:_id",
-      "handler": "Conversation.findOne",
+      "path": "/conversations/:id",
+      "handler": "conversation.findOne",
       "config": {
         "policies": []
       }
@@ -27,23 +27,23 @@
     {
       "method": "POST",
       "path": "/conversations",
-      "handler": "Conversation.create",
+      "handler": "conversation.create",
       "config": {
         "policies": []
       }
     },
     {
       "method": "PUT",
-      "path": "/conversations/:_id",
-      "handler": "Conversation.update",
+      "path": "/conversations/:id",
+      "handler": "conversation.update",
       "config": {
         "policies": []
       }
     },
     {
       "method": "DELETE",
-      "path": "/conversations/:_id",
-      "handler": "Conversation.destroy",
+      "path": "/conversations/:id",
+      "handler": "conversation.delete",
       "config": {
         "policies": []
       }

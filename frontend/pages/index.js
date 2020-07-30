@@ -1,42 +1,45 @@
-import React from "react";
-import Layout from "../components/Layout";
 import IntroductionDiv from "../components/IntroductionDiv";
 import Rooms from "../components/Rooms";
 import News from "../components/News";
-import { getFullLink, getAPIResponse } from "../libraries/requests";
+import { getApiResponse, getFullLink } from "../libraries/requests";
 
 import "../public/styles/pages/index.module.scss";
 
 export async function getServerSideProps() {
-  let allRooms = await getAPIResponse('/rooms', []),
-      news = await getAPIResponse('/news', []),
-      actualRooms = Array(),
-      Villa;
+  let Villa = (await getApiResponse('/rooms', {
+    name: 'Villa'
+  }))[0];
 
-  for (let i = 0; i < allRooms.length; i += 1) {
-    if (allRooms[i].isUtility)
-      Villa = allRooms[i];
-    else
-      actualRooms.push(allRooms[i]);
+  for (let i = 0; i < Villa.images.length; i += 1) {
+    Villa.images[i] = {
+      url: getFullLink(Villa.images[i].url),
+      width: Villa.images[i].width,
+      height: Villa.images[i].height
+    };
   }
+
+  Villa = {
+    name: Villa.name,
+    header: Villa.header,
+    description: Villa.description,
+    images: Villa.images
+  };
 
   return {
     props: {
       main: Villa,
-      rooms: actualRooms,
-      news: news,
       title: 'Главная'
     }
   }
 }
 
-export default ({ main, rooms, news }) => {
+export default function({ main }) {
   return (
     <>
       <IntroductionDiv content={main}/>
       <div className="content-flex-wrapper">
-        <Rooms content={rooms} />
-        <News content={news} />
+        <Rooms/>
+        <News/>
       </div>
     </>
   );

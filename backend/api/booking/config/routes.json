@@ -3,7 +3,7 @@
     {
       "method": "GET",
       "path": "/bookings",
-      "handler": "Booking.find",
+      "handler": "booking.find",
       "config": {
         "policies": []
       }
@@ -11,15 +11,15 @@
     {
       "method": "GET",
       "path": "/bookings/count",
-      "handler": "Booking.count",
+      "handler": "booking.count",
       "config": {
         "policies": []
       }
     },
     {
       "method": "GET",
-      "path": "/bookings/:_id",
-      "handler": "Booking.findOne",
+      "path": "/bookings/:id",
+      "handler": "booking.findOne",
       "config": {
         "policies": []
       }
@@ -27,23 +27,23 @@
     {
       "method": "POST",
       "path": "/bookings",
-      "handler": "Booking.create",
+      "handler": "booking.create",
       "config": {
         "policies": []
       }
     },
     {
       "method": "PUT",
-      "path": "/bookings/:_id",
-      "handler": "Booking.update",
+      "path": "/bookings/:id",
+      "handler": "booking.update",
       "config": {
         "policies": []
       }
     },
     {
       "method": "DELETE",
-      "path": "/bookings/:_id",
-      "handler": "Booking.destroy",
+      "path": "/bookings/:id",
+      "handler": "booking.delete",
       "config": {
         "policies": []
       }

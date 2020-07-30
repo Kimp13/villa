@@ -1,25 +1,25 @@
 {
-  "connection": "default",
-  "collectionName": "",
+  "kind": "collectionType",
+  "collectionName": "bookings",
   "info": {
-    "name": "booking",
-    "description": "Бронирования на сайте."
+    "name": "booking"
   },
   "options": {
+    "increments": true,
     "timestamps": true
   },
   "attributes": {
+    "roomId": {
+      "type": "integer",
+      "required": true
+    },
     "from": {
-      "required": true,
-      "type": "date"
+      "type": "date",
+      "required": true
     },
     "to": {
-      "required": true,
-      "type": "date"
-    },
-    "room": {
-      "model": "room",
-      "via": "bookings"
+      "type": "date",
+      "required": true
     }
   }
 }

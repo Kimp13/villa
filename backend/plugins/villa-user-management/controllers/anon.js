@@ -40,7 +40,7 @@ module.exports = {
     const newConversation = await strapi.models.conversation.create({
       participants: [
         'anon' + anon.id,
-        'hello'
+        '1'
       ]
     });
 

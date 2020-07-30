@@ -3,7 +3,7 @@
     {
       "method": "GET",
       "path": "/rooms",
-      "handler": "Room.find",
+      "handler": "room.find",
       "config": {
         "policies": []
       }
@@ -11,15 +11,15 @@
     {
       "method": "GET",
       "path": "/rooms/count",
-      "handler": "Room.count",
+      "handler": "room.count",
       "config": {
         "policies": []
       }
     },
     {
       "method": "GET",
-      "path": "/rooms/:_id",
-      "handler": "Room.findOne",
+      "path": "/rooms/:id",
+      "handler": "room.findOne",
       "config": {
         "policies": []
       }
@@ -27,23 +27,23 @@
     {
       "method": "POST",
       "path": "/rooms",
-      "handler": "Room.create",
+      "handler": "room.create",
       "config": {
         "policies": []
       }
     },
     {
       "method": "PUT",
-      "path": "/rooms/:_id",
-      "handler": "Room.update",
+      "path": "/rooms/:id",
+      "handler": "room.update",
       "config": {
         "policies": []
       }
     },
     {
       "method": "DELETE",
-      "path": "/rooms/:_id",
-      "handler": "Room.destroy",
+      "path": "/rooms/:id",
+      "handler": "room.delete",
       "config": {
         "policies": []
       }

@@ -1,13 +1,5 @@
 'use strict';
 
-/**
- * An asynchronous bootstrap function that runs before
- * your application gets started.
- *
- * This gives you an opportunity to set up your data model,
- * run jobs, or perform some special logic.
- */
-
 function getCookie(cookie, cookieString) {
   if (cookieString === undefined) {
     cookieString = document.cookie;
@@ -22,96 +14,83 @@ function getCookie(cookie, cookieString) {
   return null;
 }
 
-const userManagement = strapi.plugins['villa-user-management'].controllers;
+module.exports = () => {
 
-module.exports = cb => {
+  const strapi = global.strapi;
 
-  const io = require('socket.io')(strapi.server),
-        emitUser = (socket, user, isAnonymous) => {
-          socket.userId = user.id;
-          strapi.models.conversation.find().limit(-1)
-            .then(conversations => {
-              for (let i = 0; i < conversations.length; i += 1) {
-                socket.join(conversations[i].id);
-              }
-            });
-          strapi.plugins['users-permissions'].models.role.findOne({
-            _id: user.role
-          })
-            .then(role => {
+  let interval = setInterval(() => {
+    if (strapi.server) {
+      clearInterval(interval);
+
+      const io = require('socket.io')(strapi.server),
+            userManagement = strapi.plugins['villa-user-management'].controllers,
+            emitUser = (socket, user, isAnonymous) => {
+              socket.userId = user.id;
               socket.emit('user', {
                 isAuthenticated: true,
                 isAnonymous,
-                isRoot: (role.type === 'root'),
+                id: user.id,
                 name: user.name,
                 surname: user.surname,
                 phoneNumber: user.phoneNumber
               });
-              socket.on('getConversations', function(cfg) {
-                cfg ? null : cfg = {};
-                userManagement.conversations.find(this, cfg.limit, cfg.skip)
-                  .then(data => socket.emit('getConversations', data));
+            },
+            emitUnregisteredUser = socket => {
+              socket.emit('user', {
+                isAuthenticated: false
               });
-              socket.on('getConversationsCount', function() {
-                userManagement.conversations.count(this)
-                  .then(count => socket.emit('getConversationsCount', count));
-              });
+            };
+
+      io.on('connection', socket => {
+        let cookieString;
+
+        try {
+          cookieString = socket.conn.request.headers.cookie;
+          if (!cookieString) {
+            cookieString = '';
+          }
+        } catch(e) {
+          cookieString = '';
+        }
+
+        let jwt, anonId;
+
+        jwt = getCookie('jwt', cookieString);
+
+        if (jwt) {
+          strapi.plugins['users-permissions'].services.jwt.verify(jwt)
+            .then(registeredUser => {
+              if (registeredUser) {
+                strapi.query('user', 'users-permissions').findOne({
+                  id: registeredUser.id
+                })
+                  .then(user => emitUser(socket, user, false));
+              } else {
+                emitUnregisteredUser(socket);
+              }
+            }, e => {
+              emitUnregisteredUser(socket);
             });
-        },
-        emitUnregisteredUser = socket => {
-          socket.emit('user', {
-            isAuthenticated: false
-          });
-          console.log(`Незарегистрированный пользователь подключился.`);
-        };
-
-  io.on('connection', (socket) => {
-    let cookieString;
-
-    try {
-      cookieString = socket.conn.request.headers.cookie;
-      if (!cookieString) {
-        cookieString = '';
-      }
-    } catch(e) {
-      cookieString = '';
-    }
-
-    let jwt, anonId;
-
-    jwt = getCookie('jwt', cookieString);
-    if (jwt) {
-      strapi.plugins['users-permissions'].services.jwt.verify(jwt)
-        .then(registeredUser => {
-          if (registeredUser) {
-            strapi.plugins['users-permissions'].models.user.findOne({
-              _id: registeredUser._id
+        } else {
+          anonId = getCookie('a', cookieString);
+          if (anonId) {
+            strapi.query('anonymoususer').findOne({
+              id: anonId
             })
-              .then(user => emitUser(socket, user, false));
+              .then(anon => {
+                if (anon) {
+                  emitUser(socket, anon, true);
+                } else {
+                  emitUnregisteredUser(socket);
+                }
+              });
           } else {
             emitUnregisteredUser(socket);
           }
-        });
-    } else {
-      anonId = getCookie('a', cookieString);
-      if (anonId) {
-        strapi.models.anonymoususer.findOne({
-          _id: anonId
-        })
-          .then(anon => {
-            if (anon) {
-              emitUser(socket, anon, true);
-            } else {
-              emitUnregisteredUser(socket);
-            }
-          });
-      } else {
-        emitUnregisteredUser(socket);
-      }
+        }
+      });
+
+      strapi.io = io;
     }
-  });
-
-  strapi.io = io;
-
-  cb();
+  });   
 };

@@ -6,9 +6,11 @@ import "../public/styles/components/header.module.scss";
 export default class Header extends React.Component {
   constructor(props) {
     super(props);
+    
     this.state = {
       opened: false
     }
+
     this.handleButtonClick = this.handleButtonClick.bind(this);
   }
 
@@ -86,7 +88,7 @@ export default class Header extends React.Component {
             {firstLinks}
           </div>
           <Link href="/">
-            <a className="header-logo" onClick={this.handleButtonClick}>
+            <a className="header-logo" onClick={this.state.opened ? this.handleButtonClick : null}>
                 <i className="fas fa-sun" />
                 <span className="header-logo-main">
                   B

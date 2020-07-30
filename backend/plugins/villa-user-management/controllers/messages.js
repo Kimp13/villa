@@ -9,22 +9,6 @@ module.exports = {
           skip = body.skip || 0,
           limit = body.limit || 50;
 
-      let findIndex = authorId => {
-        if (authorId === socket.userId) {
-          return 0;
-        } else {
-          let counter = 1;
-          for (let i = 0; i < conversation.participants.length; i += 1) {
-            if (conversation.participants[i] !== socket.userId) {
-              if (conversation.participants[i] === authorId) {
-                return counter;
-              }
-              counter += 1;
-            }
-          }
-        }
-      }
-
       let query = {conversationId};
 
       let conversation = await strapi.models.conversation.findOne({
@@ -41,7 +25,7 @@ module.exports = {
         response[i] = {
           type: response[i].type,
           text: response[i].text,
-          authorId: findIndex(response[i].authorId),
+          authorId: response[i].authorId,
           attachments: response[i].attachments
         }
       }

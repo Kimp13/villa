@@ -5,6 +5,7 @@ import "../public/styles/components/calendar.module.scss";
 export default class Calendar extends React.Component {
   constructor(props) {
     super(props);
+
     this.state = {
       currentMonth: this.props.from.month,
       currentYear: this.props.from.year,
@@ -12,6 +13,7 @@ export default class Calendar extends React.Component {
       to: this.props.to,
       chooseMode: false
     }
+
     this.switchMonth = this.switchMonth.bind(this);
     this.chooseSecondDay = this.chooseSecondDay.bind(this);
     this.highlightChoices = this.highlightChoices.bind(this);
@@ -19,10 +21,10 @@ export default class Calendar extends React.Component {
 
   incrementDate(date, monthDaysCount) {
     if (date.day === monthDaysCount) {
-      if (date.month === 11) {
+      if (date.month === 12) {
         return {
           year: date.year + 1,
-          month: 0,
+          month: 1,
           day: 1
         }
       }
@@ -44,13 +46,13 @@ export default class Calendar extends React.Component {
     if (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) {
       isYearLeap = true;
     }
-    if (month < 7) {
-      if (month === 1) {
+    if (month < 8) {
+      if (month === 2) {
         return isYearLeap ? 29 : 28;
       }
-      return 30 + (month + 1) % 2;
+      return 30 + month % 2;
     }
-    return 30 + month % 2;
+    return 30 + (month - 1) % 2;
   }
 
   getFirstBooking(bookings, start, forwards) {
@@ -119,9 +121,9 @@ export default class Calendar extends React.Component {
     }
     if (target.classList.length === 1) {
       if (target.classList[0].substring(16) === 'next') {
-        if (this.state.currentMonth === 11) {
+        if (this.state.currentMonth === 12) {
           newState = {
-            currentMonth: 0,
+            currentMonth: 1,
             currentYear: this.state.currentYear + 1
           };
         } else {
@@ -131,9 +133,9 @@ export default class Calendar extends React.Component {
           };
         }
       } else {
-        if (this.state.currentMonth === 0) {
+        if (this.state.currentMonth === 1) {
           newState = {
-            currentMonth: 11,
+            currentMonth: 12,
             currentYear: this.state.currentYear - 1
           };
         } else {
@@ -152,26 +154,122 @@ export default class Calendar extends React.Component {
     });
   }
 
+  getPrice(from, to) {
+    let getDatePrices = (day, month) => {
+      if ((dates[0].month > month) || (dates[0].month === month && dates[0].day >= day)) {
+        return this.props.parentClass.props.priceInfo[dateStrings[dates.length - 1]].slice();
+      }
+
+      for (let i = 1; i < dates.length; i += 1) {
+        if ((dates[i].month > month) || (dates[i].month === month && dates[i].day > day)) {
+          return this.props.parentClass.props.priceInfo[dateStrings[i - 1]].slice();
+        }
+      }
+
+      return this.props.parentClass.props.priceInfo[dateStrings[dates.length - 1]].slice();
+    },
+        dates = new Array(),
+        dateStrings = Object.keys(this.props.parentClass.props.priceInfo);
+
+    if (this.props.parentClass.props.priceInfo) {
+      let previousMonth = from.month,
+          previousMonthDayCount = this.getDaysAmountInMonthOfYear(from.month, from.year),
+          prices,
+          newPrices;
+
+      for (let i = 0; i < dateStrings.length; i += 1) {
+        dates.push({
+          day: parseInt(dateStrings[i].substring(0, 2)),
+          month: parseInt(dateStrings[i].substring(3))
+        });
+      }
+
+      prices = getDatePrices(from.day, from.month);
+
+      from = this.incrementDate(from, previousMonthDayCount);
+
+      while (from.year < to.year) {
+        if (from.month !== previousMonth) {
+          previousMonth = from.month;
+          previousMonthDayCount = this.getDaysAmountInMonthOfYear(from.month, from.year);
+        }
+
+        newPrices = getDatePrices(from.day, from.month);
+
+        for (let i = 0; i < prices.length; i += 1) {
+          prices[i] += newPrices[i];
+        }
+
+        from = this.incrementDate(from, previousMonthDayCount);
+      }
+
+      while (from.month < to.month) {
+        if (from.month !== previousMonth) {
+          previousMonth = from.month;
+          previousMonthDayCount = this.getDaysAmountInMonthOfYear(from.month, from.year);
+        }
+
+        newPrices = getDatePrices(from.day, from.month);
+
+        for (let i = 0; i < prices.length; i += 1) {
+          prices[i] += newPrices[i];
+        }
+
+        from = this.incrementDate(from, previousMonthDayCount);
+      }
+
+      previousMonth = from.month;
+      previousMonthDayCount = this.getDaysAmountInMonthOfYear(from.month, from.year);
+
+      while (from.day < to.day) {
+        newPrices = getDatePrices(from.day, from.month);
+
+        for (let i = 0; i < prices.length; i += 1) {
+          prices[i] += newPrices[i];
+        }
+
+        from = this.incrementDate(from, previousMonthDayCount);
+      }
+
+      return prices;
+    }
+
+    return null;
+  }
+
   chooseSecondDay(event) {
     let day = parseInt(event.target.innerHTML), newState = {
       currentMonth: this.state.currentMonth,
       currentYear: this.state.currentYear
     }
+
     if (this.state.chooseMode) {
       let from, to;
+
       if (this.props.target.classList[0] === 'from') {
-        from = `${day < 10 ? '0' + day.toString() : day}.${this.state.currentMonth < 10 ? '0' + this.state.currentMonth.toString() : this.state.currentMonth}.${this.state.currentYear}`
+        from = {
+          day,
+          month: this.state.currentMonth,
+          year: this.state.currentYear
+        };
         to = this.props.parentClass.state.to;
       } else {
-        to = `${day < 10 ? '0' + day.toString() : day}.${this.state.currentMonth < 10 ? '0' + this.state.currentMonth.toString() : this.state.currentMonth}.${this.state.currentYear}`
+        to = {
+          day,
+          month: this.state.currentMonth,
+          year: this.state.currentYear
+        };
         from = this.props.parentClass.state.from;
       }
+
       this.props.parentClass.setState({
         calendarShown: false,
         provoker: null,
-        from: from,
-        to: to
+        from,
+        to,
+        price: this.getPrice(from, to)
       });
+
       this.state = {
         currentMonth: this.props.from.month,
         currentYear: this.props.from.year,
@@ -179,6 +277,7 @@ export default class Calendar extends React.Component {
         to: this.props.to,
         chooseMode: false
       }
+
       this.unhighlightChoices();
     } else {
       if (this.props.target.classList[0] === 'from') {
@@ -212,10 +311,11 @@ export default class Calendar extends React.Component {
           chooseMode: true,
           divideDay: firstBooking ? firstBooking.from.day : false
         });
+
         this.props.parentClass.setState({
           calendarShown: true,
           provoker: this.props.target.nextElementSibling,
-          from: `${from.day < 10 ? '0' + from.day.toString() : from.day}.${from.month < 10 ? '0' + from.month.toString() : from.month}.${from.year}`
+          from
         });
       } else {
         let to = {
@@ -248,7 +348,7 @@ export default class Calendar extends React.Component {
         this.props.parentClass.setState({
           calendarShown: true,
           provoker: this.props.target.previousElementSibling,
-          to: `${to.day < 10 ? '0' + to.day.toString() : to.day}.${to.month < 10 ? '0' + to.month.toString() : to.month}.${to.year}`
+          to
         });
       }
     }
@@ -295,9 +395,10 @@ export default class Calendar extends React.Component {
         bookingEndMode = true;
         from = this.incrementDate(this.state.from, this.getDaysAmountInMonthOfYear(this.state.from.month, this.state.from.year));
         to = this.incrementDate(this.state.to, this.getDaysAmountInMonthOfYear(this.state.to.month, this.state.to.year));
+
         if (this.state.currentYear < from.year) {
           this.state.currentYear += 1;
-          this.state.currentMonth = 0;
+          this.state.currentMonth = 1;
         } else if (from.year === this.state.currentYear && this.state.currentMonth < from.month) {
           this.state.currentMonth += 1;
         }
@@ -305,7 +406,9 @@ export default class Calendar extends React.Component {
         from = this.state.from;
         to = this.state.to;
       }
+
       let targetParams = this.props.target.getBoundingClientRect();
+
       style = {
         display: '',
         top: targetParams.top,
@@ -334,7 +437,7 @@ export default class Calendar extends React.Component {
         ],
         dayBricks = [],
         weekDayOfMonth = ((new Date(`${this.state.currentYear}-${this.state.currentMonth + 1}-1`).getDay()) + 6) % 7,
-        lastMonthDayCount = this.getDaysAmountInMonthOfYear(this.state.currentMonth === 0 ? 11 : this.state.currentMonth - 1, this.state.currentYear),
+        lastMonthDayCount = this.getDaysAmountInMonthOfYear(this.state.currentMonth === 1 ? 12 : this.state.currentMonth - 1, this.state.currentYear),
         thisMonthDayCount = this.getDaysAmountInMonthOfYear(this.state.currentMonth, this.state.currentYear),
         firstMonth = (this.state.currentMonth === from.month && this.state.currentYear === from.year),
         lastMonth = (this.state.currentMonth === to.month && this.state.currentYear === to.year),
@@ -392,8 +495,9 @@ export default class Calendar extends React.Component {
     }
     if (this.state.chooseMode) {
       let bookingForwards = true;
+
       if (this.props.target.classList[0] === 'to') {
-        if (firstMonth) {
+        if (firstMonth && from.day > 1) {
           dayBricks.pop();
           dayBricks.push(
             <div key={'chosen'} className="day-brick chosen">
@@ -401,7 +505,12 @@ export default class Calendar extends React.Component {
             </div>
           );
         }
-        for (i; i < (lastMonth ? this.state.divideDay : lastDay); i += 1) {
+
+        for (i;
+          i < ((lastMonth && this.state.divideDay) ?
+          this.state.divideDay :
+          lastDay);
+          i += 1) {
           dayBricks.push(
             <div key={i} className="day-brick available" onClick={this.chooseSecondDay} onMouseEnter={this.highlightChoices} onMouseLeave={this.unhighlightChoices}>
               {i + 1}
@@ -517,7 +626,7 @@ export default class Calendar extends React.Component {
             <i className="fas fa-caret-left" />
           </button>
           <h3 className="calendar-header-header">
-            {this.props.convertNumberToMonth[this.state.currentMonth]}
+            {this.props.convertNumberToMonth[this.state.currentMonth - 1]}
           </h3>
           <button type="button" className={secondButtonClassName} onClick={this.switchMonth}>
             <i className="fas fa-caret-right" />

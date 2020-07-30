@@ -3,7 +3,7 @@
     {
       "method": "GET",
       "path": "/messages",
-      "handler": "Message.find",
+      "handler": "message.find",
       "config": {
         "policies": []
       }
@@ -11,15 +11,15 @@
     {
       "method": "GET",
       "path": "/messages/count",
-      "handler": "Message.count",
+      "handler": "message.count",
       "config": {
         "policies": []
       }
     },
     {
       "method": "GET",
-      "path": "/messages/:_id",
-      "handler": "Message.findOne",
+      "path": "/messages/:id",
+      "handler": "message.findOne",
       "config": {
         "policies": []
       }
@@ -27,23 +27,23 @@
     {
       "method": "POST",
       "path": "/messages",
-      "handler": "Message.create",
+      "handler": "message.create",
       "config": {
         "policies": []
       }
     },
     {
       "method": "PUT",
-      "path": "/messages/:_id",
-      "handler": "Message.update",
+      "path": "/messages/:id",
+      "handler": "message.update",
       "config": {
         "policies": []
       }
     },
     {
       "method": "DELETE",
-      "path": "/messages/:_id",
-      "handler": "Message.destroy",
+      "path": "/messages/:id",
+      "handler": "message.delete",
       "config": {
         "policies": []
       }

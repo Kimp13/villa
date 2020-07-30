@@ -67,10 +67,6 @@ $RECYCLE.BIN/
 
 .tmp
 *.log
-*.sql
-*.sqlite
-*.sqlite3
-
 
 ############################
 # Misc.
@@ -80,7 +76,6 @@ $RECYCLE.BIN/
 ssl
 .idea
 nbproject
-public/uploads/*
 !public/uploads/.gitkeep
 
 ############################
@@ -102,3 +97,13 @@ node_modules
 
 testApp
 coverage
+
+############################
+# Strapi
+############################
+
+.env
+license.txt
+exports
+.cache
+build

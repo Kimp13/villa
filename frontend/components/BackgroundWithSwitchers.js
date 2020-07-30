@@ -1,6 +1,8 @@
-import react from 'react';
+import React from "react";
 
-import '../public/styles/components/backgroundWithSwitchers.module.scss';
+import "../public/styles/components/backgroundWithSwitchers.module.scss";
+
+import { getFullLink } from "../libraries/requests.js";
 
 export default class BackgroundWithSwitchers extends React.Component {
   constructor(props) {
@@ -12,8 +14,17 @@ export default class BackgroundWithSwitchers extends React.Component {
       index: 0
     };
 
-    this.backgroundContainer = React.createRef();
+    this.backgrounds = this.props.backgrounds.length > 0 ?
+                       this.props.backgrounds :
+                       [
+                         {
+                          url: getFullLink('/uploads/no_photo_0b3f6b97ff.png'),
+                          width: 1,
+                          height: 1
+                         }
+                       ];
 
+    this.backgroundContainer = React.createRef();
     this.componentDidMount = this.componentDidMount.bind(this);
     this.switchBGs = this.switchBGs.bind(this);
     this.centerImage = this.centerImage.bind(this);
@@ -27,36 +38,45 @@ export default class BackgroundWithSwitchers extends React.Component {
         containerHeight = this.backgroundContainer.current.offsetHeight;
 
     while (leftSum < parentWidth) {
-      let leftIndex = this.props.backgrounds.length - 1 - this.state.leftOffset % this.props.backgrounds.length,
+      let leftIndex = this.backgrounds.length - 1 - this.state.leftOffset % this.backgrounds.length,
           leftImage = document.createElement('img');
 
       this.state.leftOffset += 1;
 
-      leftImage.setAttribute('src', this.props.backgrounds[leftIndex]);
+      leftImage.setAttribute('src', this.backgrounds[leftIndex].url);
       leftImage.setAttribute('alt', '');
       leftImage.classList.add('bg-image');
 
       this.backgroundContainer.current.prepend(leftImage);
 
-      leftSum += (leftImage.naturalWidth / leftImage.naturalHeight) * containerHeight;
+      leftSum += this.backgrounds[leftIndex].width /
+                 this.backgrounds[leftIndex].height *
+                 containerHeight;
     }
+
     while (rightSum < parentWidth * 1.5) {
-      let rightIndex = (this.state.rightOffset % this.props.backgrounds.length),
+      let rightIndex = (this.state.rightOffset % this.backgrounds.length),
           rightImage = document.createElement('img');
 
       this.state.rightOffset += 1;
 
-      rightImage.setAttribute('src', this.props.backgrounds[rightIndex]);
+      rightImage.setAttribute('src', this.backgrounds[rightIndex].url);
       rightImage.setAttribute('alt', '');
       rightImage.classList.add('bg-image');
 
       this.backgroundContainer.current.append(rightImage);
-      rightSum += (rightImage.naturalWidth / rightImage.naturalHeight) * containerHeight;
+
+      rightSum += this.backgrounds[rightIndex].width /
+                  this.backgrounds[rightIndex].height *
+                  containerHeight;
     }
 
-    let centerImage = this.backgroundContainer.current.children[this.state.leftOffset];
+    let index = this.backgrounds.length - (this.state.leftOffset % this.backgrounds.length) - 1,
+        centerImageWidth = this.backgrounds[index].width /
+                           this.backgrounds[index].height *
+                           containerHeight;
 
-    this.state.currentTranslate = ((parentWidth  - centerImage.clientWidth) / 2) - leftSum;
+    this.state.currentTranslate = ((parentWidth  - centerImageWidth) / 2) - leftSum;
     this.state.currentWidth = leftSum + rightSum;
 
     this.centerImageWithoutAnimation({
@@ -65,8 +85,8 @@ export default class BackgroundWithSwitchers extends React.Component {
     });
   }
 
-  operateImages(movingRight, { parentWidth, childrenWidth }) {
-    let currentImage = this.backgroundContainer.current.children[this.state.leftOffset + this.state.index];
+  operateImages(movingRight, parentWidth, childrenWidth) {
+    let parentHeight = this.backgroundContainer.current.clientHeight;
 
     if (movingRight) {
       let removedImagesWidth = 0;
@@ -86,26 +106,30 @@ export default class BackgroundWithSwitchers extends React.Component {
 
       while (widthDifference < parentWidth) {
         img = document.createElement('img');
+
         if (this.state.rightOffset >= 0) {
-          index = this.state.rightOffset % this.props.backgrounds.length;
+          index = this.state.rightOffset % this.backgrounds.length;
         } else {
-          index = (this.props.backgrounds.length - (-this.state.rightOffset) % this.props.backgrounds.length) % this.props.backgrounds.length;
+          index = (this.backgrounds.length - (-this.state.rightOffset) % this.backgrounds.length) % this.backgrounds.length;
         }
-        img.src = this.props.backgrounds[index];
+
+        img.src = this.backgrounds[index].url;
         img.classList.add('bg-image');
 
         this.backgroundContainer.current.append(img);
         this.state.rightOffset += 1;
 
-        widthDifference += img.clientWidth;
+        widthDifference += this.backgrounds[index].width /
+                           this.backgrounds[index].height *
+                           parentHeight;
       }
+
       this.centerImageWithoutAnimation({
         translate: this.state.currentTranslate + removedImagesWidth,
         width: widthDifference + childrenWidth
       });
 
     } else {
-
       let widthDifference = this.state.currentWidth - childrenWidth,
           lastChildIndex = this.backgroundContainer.current.childElementCount - 1;
 
@@ -124,20 +148,29 @@ export default class BackgroundWithSwitchers extends React.Component {
 
       while (childrenWidth < parentWidth) {
         img = document.createElement('img');
+
         if (this.state.leftOffset >= 0) {
-          index = this.props.backgrounds.length - 1 - this.state.leftOffset % this.props.backgrounds.length;
+          index = this.backgrounds.length - 1 - this.state.leftOffset % this.backgrounds.length;
         } else {
-          index = (this.state.leftOffset + 1) % (-this.props.backgrounds.length);
+          index = (this.state.leftOffset + 1) % (-this.backgrounds.length);
         }
-        img.src = this.props.backgrounds[index];
+
+        img.src = this.backgrounds[index].url;
         img.classList.add('bg-image');
 
         this.backgroundContainer.current.prepend(img);
         this.state.leftOffset += 1;
 
-        childrenWidth += img.clientWidth;
-        addedImagesWidth += img.clientWidth;
+        console.log(index);
+
+        let imageWidth = this.backgrounds[index].width /
+                         this.backgrounds[index].height *
+                         parentHeight;
+
+        childrenWidth += imageWidth;
+        addedImagesWidth += imageWidth;
       }
+
       this.centerImageWithoutAnimation({
         translate: this.state.currentTranslate - addedImagesWidth,
         width: childrenWidth + widthDifference
@@ -164,7 +197,7 @@ export default class BackgroundWithSwitchers extends React.Component {
       childrenWidth += this.backgroundContainer.current.children[i].offsetWidth / 2;
     }
 
-    childrenWidth = this.operateImages(movingRight, { parentWidth, childrenWidth });
+    childrenWidth = this.operateImages(movingRight, parentWidth, childrenWidth);
 
     this.state.currentTranslate = (parentWidth / 2) - childrenWidth;
 
@@ -180,6 +213,7 @@ export default class BackgroundWithSwitchers extends React.Component {
     while (target.nodeName != 'DIV') {
       target = target.parentNode;
     }
+
     movingRight = (target.classList.contains('right'))
     this.state.index += movingRight ? 1 : -1;
     this.centerImage(movingRight);

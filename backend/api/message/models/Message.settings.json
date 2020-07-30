@@ -1,39 +1,32 @@
 {
-  "connection": "default",
-  "collectionName": "message",
+  "kind": "collectionType",
+  "collectionName": "messages",
   "info": {
-    "name": "message",
-    "description": "Все сообщения на сайте."
+    "name": "message"
   },
   "options": {
+    "increments": true,
     "timestamps": true
   },
   "attributes": {
-    "conversationId": {
-      "required": true,
-      "type": "string"
+    "text": {
+      "type": "richtext",
+      "required": true
     },
     "authorId": {
-      "required": true,
       "type": "string"
     },
-    "attachments": {
-      "collection": "file",
-      "via": "related",
-      "plugin": "upload"
+    "conversationId": {
+      "type": "integer"
     },
     "type": {
-      "default": "normal",
+      "type": "enumeration",
       "enum": [
-        "normal",
+        "default",
         "booking"
       ],
-      "required": true,
-      "type": "enumeration"
-    },
-    "text": {
-      "required": true,
-      "type": "text"
+      "default": "default",
+      "required": true
     }
   }
 }

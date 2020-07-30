@@ -1,3 +1,3 @@
-# backend
+# Villa Guest House
 
-A quick description of backend.
+A website containing info about and relating to Villa Guest House located in Phiolent Cape, Sevastopol, Russia.

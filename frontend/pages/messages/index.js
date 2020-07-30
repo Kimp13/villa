@@ -1,7 +1,9 @@
 import React from "react";
-
 import Loader from "../../components/Loader.js";
 import Conversation from "../../components/Conversation.js";
+
+import { getApiResponse } from "../../libraries/requests";
+import { getCookie } from "../../libraries/cookies";
 
 import "../../public/styles/pages/messages/index.module.scss";
 
@@ -16,7 +18,10 @@ export async function getStaticProps() {
 class Messages extends React.Component {
   constructor(props) {
     super(props);
-    if (!this.props.socket.user.isAuthenticated) {
+
+    this.jwt = getCookie("jwt");
+    
+    if (!(this.props.socket.user.isAuthenticated && (this.jwt !== null))) {
       window.location.href = '/auth';
     }
 
@@ -28,52 +33,36 @@ class Messages extends React.Component {
 
     this.checkScroll = this.checkScroll.bind(this);
 
-    this.props.socket.emit('getConversations');
-    this.props.socket.on('getConversations', data => {
-      this.props.socket.emit('getConversationsCount');
-      this.props.socket.on('getConversationsCount', count => {
-        this.setState({
-          conversations: this.createConversations(data),
-          loading: false,
-          skip: 10,
-          count
-        });
-        this.initialLoading();
-        this.props.socket.off('getConversations');
-        this.props.socket.off('getConversationsCount');
-      });
-    });
+    getApiResponse("/villa-user-management/getConversationsCount", {
+      jwt: this.jwt
+    })
+      .then(count => {
+        count = parseInt(count);
+
+        if (count > 0) {
+          this.createConversations(true);
+        } else {
+          this.setState({
+            loading: false,
+            conversations: [
+              <p className="conversations-content-null" key="0">
+                Нет разговоров
+              </p>
+            ],
+            skip: 0,
+            count
+          });
+        }
+      }, e => console.log(e));
   }
 
   initialLoading() {
     let element = document.getElementsByClassName('conversations-content')[0];
-    if (this.state.skip < this.state.count) {
-      if (element.scrollHeight - (element.scrollTop + element.clientHeight) <= 50) {
-        this.setState({
-          conversations: this.state.conversations,
-          skip: this.state.skip,
-          count: this.state.count,
-          loading: true
-        });
-        this.props.socket.emit('getConversations', {
-          skip: this.state.skip
-        });
-        this.props.socket.on('getConversations', data => {
-          let conversations = this.state.conversations + this.createConversations(data);
-          this.setState({
-            conversations,
-            skip: this.state.skip + 10,
-            loading: false,
-            count: this.state.count
-          });
-          this.initialLoading();
-        });
-      } else {
-        this.props.socket.off('getConversations');
-      }
-    } else {
-      this.props.socket.off('getConversations');
-    }
+
+    if (
+      this.state.skip < this.state.count &&
+      element.scrollHeight - (element.scrollTop + element.clientHeight) <= 50
+    ) this.createConversations(true);
   }
 
   checkScroll(event, element) {
@@ -81,39 +70,35 @@ class Messages extends React.Component {
 
     if (this.state.skip < this.state.count) {
       if (element.scrollHeight - (element.scrollTop + element.clientHeight) <= 50) {
-        this.setState({
-          conversations: this.state.conversations,
-          skip: this.state.skip,
-          count: this.state.count,
-          loading: true
-        });
-        this.props.socket.emit('getConversations', {
-          skip: this.state.skip
-        });
-        this.props.socket.on('getConversations', data => {
-          let conversations = this.state.conversations.concat(this.createConversations(data));
-          this.setState({
-            conversations,
-            skip: this.state.skip + 10,
-            loading: false,
-            count: this.state.count
-          });
-          this.props.socket.off('getConversations');
-        });
+        this.createConversations();
       }
     } else {
       document.getElementsByClassName('conversations-content')[0].onscroll = null;
     }
   }
 
-  createConversations(data) {
-    let conversations = Array(),
-        id = this.state.skip;
-    for (let i = 0; i < data.length; i += 1) {
-      conversations.push(<Conversation socket={this.props.socket} data={data[i]} id={id} key={id} />);
-      id += 1;
-    }
-    return conversations;
+  createConversations(initial = false) {
+    this.state.loading = true;
+    this.setState(this.state);
+
+    getApiResponse('/villa-user-management/getConversations', {
+      jwt: this.jwt
+    })
+      .then(data => {
+        let conversations = new Array();
+
+        for (let i = 0; i < data.length; i += 1) {
+          conversations.push(<Conversation socket={this.props.socket} data={data[i]} key={this.state.skip + i} />);
+        }
+
+        this.state.conversations =
+          this.state.conversations.concat(this.createConversations(data));
+        this.state.skip += 10;
+        this.state.loading = false;
+        this.setState(this.state);
+
+        if (initial) this.initialLoading();
+      }, e => console.log(e));
   }
 
   render() {

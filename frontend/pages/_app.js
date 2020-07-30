@@ -6,7 +6,6 @@ import io from "../../backend/node_modules/socket.io-client/dist/socket.io.dev.j
 import Layout from "../components/Layout";
 
 import { getCookie, setCookie } from "../libraries/cookies.js";
-import { getAPIResponse } from "../libraries/requests.js";
 
 import '@fortawesome/fontawesome-free/js/fontawesome';
 import '@fortawesome/fontawesome-free/js/solid';
@@ -14,17 +13,9 @@ import '@fortawesome/fontawesome-free/js/regular';
 import '@fortawesome/fontawesome-free/js/brands';
 
 export default class MyApp extends App {
-  static async getInitialProps({ ctx }) {
-    return {
-      pageProps: {},
-      user: {
-        isAuthenticated: false
-      }
-    };
-  }
-
   constructor(props) {
     super(props);
+
     this.componentDidMount = this.componentDidMount.bind(this);
   }
 

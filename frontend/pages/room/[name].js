@@ -1,33 +1,33 @@
-import { getAPIResponse } from "../../libraries/requests";
+import { getApiResponse } from "../../libraries/requests";
 
 import SimpleDate from "../../classes/SimpleDate";
 import Head from "next/head";
 import IntroductionDiv from "../../components/IntroductionDiv";
-import RoomPrices from "../../components/RoomPrices";
 import BookRoom from "../../components/BookRoom";
 
 import "../../public/styles/pages/room/index.module.scss";
 
 export async function getServerSideProps({ params }) {
-  let jwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZWY3MTlkNjExOTA1ZjE1NGM2ODdlYWEiLCJpYXQiOjE1OTMzNzc3OTksImV4cCI6MTU5NTk2OTc5OX0.Xy5Y1LMZ2FBfunMlH9vWBICLH-9mJNXk8FV3S5DSM6M';
-  let room = (await getAPIResponse('/rooms', [{key: 'name', value: params.name}]))[0],
-      serverTime = await getAPIResponse('/getTime', [], jwt);
+  let room = (await getApiResponse('/rooms', {name: params.name}))[0],
+      serverTime = await getApiResponse('/getTime');
 
   if (room && !room.isUtility) {
-    let bookings = [];
-    for (let i = 0; i < room.bookings.length; i += 1) {
-      let from = new SimpleDate(new Date(room.bookings[i].from.substring(0, 10))),
-          to = new SimpleDate(new Date(room.bookings[i].to.substring(0, 10)))
+    let bookings = new Array(),
+        roomBookings = await getApiResponse('/bookings', {
+          roomId: room.id
+        });
+
+    for (let i = 0; i < roomBookings.length; i += 1) {
       bookings.push({
         from: {
-          day: from.day,
-          month: from.month,
-          year: from.year
+          day: parseInt(roomBookings[i].from.substring(8)),
+          month: parseInt(roomBookings[i].from.substring(5, 7)),
+          year: parseInt(roomBookings[i].from.substring(0, 4))
         },
         to: {
-          day: to.day,
-          month: to.month,
-          year: to.year
+          day: parseInt(roomBookings[i].to.substring(8)),
+          month: parseInt(roomBookings[i].to.substring(5, 7)),
+          year: parseInt(roomBookings[i].to.substring(0, 4))
         }
       });
     }
@@ -69,7 +69,19 @@ export async function getServerSideProps({ params }) {
   }
 }
 
-export default ({ room, serverTime, bookings, convertNumberToMonth, user }) => {
+export default ({ room, serverTime, bookings, convertNumberToMonth, socket }) => {
+  let todate = new Date(),
+      from = {
+        day: todate.getDate(),
+        month: todate.getMonth() + 1,
+        year: todate.getFullYear()
+      },
+      to = {
+        day: 31,
+        month: 12,
+        year: 2020
+      };
+      
   return (
   <>
     <Head>
@@ -78,9 +90,13 @@ export default ({ room, serverTime, bookings, convertNumberToMonth, user }) => {
       </title>
     </Head>
     <IntroductionDiv content={room} />
-    <div className="content-flex-wrapper">
-      <RoomPrices prices={room.priceInfo} convertNumberToMonth={convertNumberToMonth}/>
-      <BookRoom user={user} convertNumberToMonth={convertNumberToMonth} bookings={bookings} bookings={bookings} from={new SimpleDate(new Date(serverTime))} to={new SimpleDate(new Date('2020-12-31'))} />
-    </div>
+    <BookRoom
+      user={socket.user}
+      convertNumberToMonth={convertNumberToMonth}
+      bookings={bookings}
+      priceInfo={room.priceInfo}
+      from={from}
+      to={to}
+    />
   </>
 )};

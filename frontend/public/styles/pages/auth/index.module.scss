@@ -82,12 +82,13 @@ body {
           display: none;
         }
         .checkbox {
-          display: inline-block;
+          display: inline-flex;
+          justify-content: center;
+          align-items: center;
           margin-right: .2rem;
           width: 1.2rem;
           height: 1.2rem;
           vertical-align: top;
-          text-align: center;
           color: white;
           border: .1rem solid $lapis;
           &.checked {

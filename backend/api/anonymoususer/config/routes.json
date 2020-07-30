@@ -3,7 +3,7 @@
     {
       "method": "GET",
       "path": "/anonymoususers",
-      "handler": "Anonymoususer.find",
+      "handler": "anonymoususer.find",
       "config": {
         "policies": []
       }
@@ -11,15 +11,15 @@
     {
       "method": "GET",
       "path": "/anonymoususers/count",
-      "handler": "Anonymoususer.count",
+      "handler": "anonymoususer.count",
       "config": {
         "policies": []
       }
     },
     {
       "method": "GET",
-      "path": "/anonymoususers/:_id",
-      "handler": "Anonymoususer.findOne",
+      "path": "/anonymoususers/:id",
+      "handler": "anonymoususer.findOne",
       "config": {
         "policies": []
       }
@@ -27,23 +27,23 @@
     {
       "method": "POST",
       "path": "/anonymoususers",
-      "handler": "Anonymoususer.create",
+      "handler": "anonymoususer.create",
       "config": {
         "policies": []
       }
     },
     {
       "method": "PUT",
-      "path": "/anonymoususers/:_id",
-      "handler": "Anonymoususer.update",
+      "path": "/anonymoususers/:id",
+      "handler": "anonymoususer.update",
       "config": {
         "policies": []
       }
     },
     {
       "method": "DELETE",
-      "path": "/anonymoususers/:_id",
-      "handler": "Anonymoususer.destroy",
+      "path": "/anonymoususers/:id",
+      "handler": "anonymoususer.delete",
       "config": {
         "policies": []
       }

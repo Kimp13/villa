@@ -8,8 +8,14 @@ import { getFullLink } from "../libraries/requests.js";
 export default class IntroductionDiv extends React.Component {
   constructor(props) {
     super(props);
-    this.backgrounds = this.props.content.images.map(imageInfo => getFullLink(imageInfo.url));
-    this.state = {background: this.backgrounds[0], index: 0};
+
+    this.backgrounds = this.props.content.images;
+
+    this.state = {
+      background: this.backgrounds[0],
+      index: 0
+    };
+
     this.componentDidMount = this.componentDidMount.bind(this);
     this.hideContent = this.hideContent.bind(this);
     this.showContent = this.showContent.bind(this);
@@ -31,28 +37,26 @@ export default class IntroductionDiv extends React.Component {
   }
 
   render() {
-    if (this.backgrounds) {
-      return (
-        <div className="introduction" onClick={this.switchBGs}>
-          <div className="introduction-content">
-            <h1>
-              {this.props.content.descriptionHeader}
-              <button className="introduction-content-close" onClick={this.hideContent}>
-                ❌
-              </button>
-            </h1>
-            <p>
-              {this.props.content.description}
-            </p>
-          </div>
-          <button className="introduction-content-open hidden" onClick={this.showContent}>
-            <i className="fas fa-angle-double-up" />
-          </button>
-          <BackgroundWithSwitchers backgrounds={this.backgrounds} wrapperSelector={'.introduction'} />
-          
+    let background = <BackgroundWithSwitchers backgrounds={this.backgrounds}/>;
+
+    return (
+      <div className="introduction" onClick={this.switchBGs}>
+        <div className="introduction-content">
+          <h1>
+            {this.props.content.header}
+            <button className="introduction-content-close" onClick={this.hideContent}>
+              ❌
+            </button>
+          </h1>
+          <p>
+            {this.props.content.description}
+          </p>
         </div>
-      );
-    }
-    return null;
+        <button className="introduction-content-open hidden" onClick={this.showContent}>
+          <i className="fas fa-angle-double-up" />
+        </button>
+        {background}
+      </div>
+    );
   }
 }

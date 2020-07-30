@@ -1,20 +1,16 @@
 {
-  "connection": "default",
-  "collectionName": "conversation",
+  "kind": "collectionType",
+  "collectionName": "conversations",
   "info": {
-    "name": "conversation",
-    "description": "Все переписки на сайте. Создавать вручную КРАЙНЕ не рекомендуется."
+    "name": "conversation"
   },
   "options": {
+    "increments": true,
     "timestamps": true
   },
   "attributes": {
     "participants": {
-      "required": true,
       "type": "json"
-    },
-    "lastMessage": {
-      "model": "message"
     }
   }
 }

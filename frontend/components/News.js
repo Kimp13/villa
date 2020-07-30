@@ -1,21 +1,23 @@
-import React from "react";
+import { getApiResponse } from "../libraries/requests";
 
 import "../public/styles/components/news.module.scss";
 
-export default class News extends React.Component {
-  constructor(props) {
-    super(props);
-  }
+export async function getServerSideProps() {
+  let news = await getApiResponse('/news');
 
-  render() {
-    let news = Array();
-    return (
-      <div className="news-container">
-        <h2>
-          Новости
-        </h2>
-        {news}
-      </div>
-    );
+  return {
+    props: {
+      news
+    }
   }
-}
+};
+
+export default function ({ news }) {
+  return (
+    <div className="news-container">
+      <h2>
+        Новости
+      </h2>
+    </div>
+  );
+};

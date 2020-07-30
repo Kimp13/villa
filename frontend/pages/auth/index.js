@@ -5,6 +5,7 @@ import { showError } from "../../libraries/forms.js";
 import { setCookie } from "../../libraries/cookies.js";
 
 import "../../public/styles/pages/auth/index.module.scss";
+import "../../public/styles/libraries/forms.module.scss";
 
 export default class Auth extends React.Component {
   constructor(props) {
@@ -53,19 +54,21 @@ export default class Auth extends React.Component {
     form[3].style.display = 'none';
 
     if (username.length === 0) {
-      showError(form, usernameField, 0, 'Введите логин.');
+      showError(form, 0, 'Введите логин.');
       formValid = false;
     } else if (usernameRegEx.test(username)) {
-      showError(form, usernameField, 0, 'Недопустимые символы в логине.');
+      showError(form, 0, 'Недопустимые символы в логине.');
       formValid = false;
     }
+
     if (password.length === 0) {
-      showError(form, passwordField, 1, 'Введите пароль.');
+      showError(form, 1, 'Введите пароль.');
       formValid = false;
     } else if (password.length < 8) {
-      showError(form, passwordField, 1, 'Пароль слишком короткий.');
+      showError(form, 1, 'Пароль слишком короткий.');
       formValid = false;
     }
+
     if (formValid) {
       fetch('http://localhost:1337/auth/local', {
         method: 'POST',
@@ -79,7 +82,7 @@ export default class Auth extends React.Component {
       }).then(response => response.json())
         .then(response => {
           if (response.error) {
-            showError(form, passwordField, 1, 'Неправильный логин или пароль.');
+            showError(form, 1, 'Неправильный логин или пароль.');
           } else {
             if (form[2].checked) {
               setCookie('jwt', response.jwt, { maxAge: 1209600 });
