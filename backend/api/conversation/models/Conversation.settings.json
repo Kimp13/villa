@@ -11,6 +11,9 @@
   "attributes": {
     "participants": {
       "type": "json"
+    },
+    "lastMessage": {
+      "type": "integer"
     }
   }
 }

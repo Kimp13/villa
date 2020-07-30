@@ -24,14 +24,21 @@ class Welcome extends React.Component {
     this.moveBackwards = this.moveBackwards.bind(this);
 
     this.headers = [
-      'Добро пожаловать на Виллу! Похоже, Вы у нас впервые. Пожалуйста, введите номер телефона, чтобы мы могли подтвердить бронирование.',
-      'Отлично! Теперь, если хотите, можете ввести свои имя и фамилию. Если не хотите, просто нажмите "Завершить".'
+      'Добро пожаловать на Виллу! Похоже, Вы у нас впервые. ' +
+      'Пожалуйста, введите номер телефона, чтобы мы могли подтвердить бронирование.',
+      'Отлично! Теперь, если хотите, можете ввести свои имя и фамилию. ' +
+      'Если не хотите, просто нажмите "Завершить".'
     ];
 
     this.forms = [
       [
         {
-          element: <input name="phoneNumber" type="tel" key={0} placeholder="Номер телефона" autoComplete="on" />,
+          element: <input
+                     name="phoneNumber"
+                     type="tel" key={0}
+                     placeholder="Номер телефона"
+                     autoComplete="on"
+                   />,
           checkFunction: value => (value.length === 0 ? {
               valid: false,
               message: 'Введите номер телефона'
@@ -77,7 +84,7 @@ class Welcome extends React.Component {
         }
       }
     });
-    if (this.props.user.isAuthenticated) {
+    if (this.props.socket.user.isAuthenticated) {
       window.location.href = '/messages';
     } else {
       this.setState({
@@ -91,7 +98,8 @@ class Welcome extends React.Component {
         formValid = true;
 
     for (let i = 0; i < this.forms[this.state.index].length; i += 1) {
-      let checkResult = this.forms[this.state.index][i].checkFunction(currentForm[i].value);
+      let checkResult =
+        this.forms[this.state.index][i].checkFunction(currentForm[i].value);
       if (!checkResult.valid) {
         formValid = false;
         showError(currentForm, i, checkResult.message);
@@ -113,7 +121,10 @@ class Welcome extends React.Component {
                 value = forms[i][j].value;
 
             if (value.length > 1) {
-              value = encodeURI(value.charAt(0).toUpperCase() + value.substring(1).toLowerCase());
+              value = encodeURI(
+                        value.charAt(0).toUpperCase() +
+                        value.substring(1).toLowerCase()
+                      );
             } else {
               value = encodeURI(value.toUpperCase());
             }
@@ -131,10 +142,13 @@ class Welcome extends React.Component {
         if (requestBody) {
           requestBody += '&';
         }
-        requestBody += '&firstBooking=' + encodeURI(firstBooking);
+        requestBody += 'firstBooking=' + encodeURI(firstBooking);
       }
 
-      fetch(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:1337' + '/villa-user-management/initializeNewAnonymous', {
+      fetch(
+        (process.env.NEXT_PUBLIC_API_URL ||
+        'http://localhost:1337') +
+        '/villa-user-management/initializeNewAnonymous', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
@@ -150,7 +164,7 @@ class Welcome extends React.Component {
           }
         })
         .then(json => {
-          setCookie('a', json._id);
+          setCookie('a', json.id);
           window.location.href = '/messages';
         })
         .catch(e => window.location.href = '/');
@@ -185,7 +199,11 @@ class Welcome extends React.Component {
           </button>
         );
         lastButton = (
-          <button type="button" className="welcome-button-forwards" onClick={this.moveForwards} >
+          <button
+            type="button"
+            className="welcome-button-forwards"
+            onClick={this.moveForwards}
+          >
             Далее
           </button>
         );
@@ -196,7 +214,11 @@ class Welcome extends React.Component {
           </button>
         );
         lastButton = (
-          <button type="button" className="welcome-button-forwards" onClick={this.completeRegistration} >
+          <button
+            type="button"
+            className="welcome-button-forwards"
+            onClick={this.completeRegistration}
+          >
             Завершить
           </button>
         );
@@ -207,7 +229,11 @@ class Welcome extends React.Component {
           </button>
         );
         lastButton = (
-          <button type="button" className="welcome-button-forwards" onClick={this.moveForwards} >
+          <button
+            type="button"
+            className="welcome-button-forwards"
+            onClick={this.moveForwards}
+          >
             Далее
           </button>
         );

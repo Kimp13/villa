@@ -19,28 +19,37 @@ class Messages extends React.Component {
   constructor(props) {
     super(props);
 
-    this.jwt = getCookie("jwt");
-    
-    if (!(this.props.socket.user.isAuthenticated && (this.jwt !== null))) {
-      window.location.href = '/auth';
+    let jwt = getCookie("jwt"),
+        a = getCookie("a");
+
+    if (a && this.props.socket.user.isAnonymous) {
+      this.auth = {a};
+    } else if (jwt && this.props.socket.user.isAnonymous === false) {
+      this.auth = {jwt};
+    } else {
+      window.loaction.href = '/auth';
     }
 
     this.state = {
-      conversations: null,
+      conversations: new Array(),
       loading: true,
       skip: 0
     }
 
     this.checkScroll = this.checkScroll.bind(this);
 
-    getApiResponse("/villa-user-management/getConversationsCount", {
-      jwt: this.jwt
-    })
+    getApiResponse("/villa-user-management/getConversationsCount", this.auth)
       .then(count => {
         count = parseInt(count);
 
         if (count > 0) {
-          this.createConversations(true);
+          this.state.skip = 0;
+          this.state.loading = false;
+          this.state.count = count;
+          this.checkScroll(
+            false,
+            document.getElementsByClassName('conversations-content')[0]
+          );
         } else {
           this.setState({
             loading: false,
@@ -56,15 +65,6 @@ class Messages extends React.Component {
       }, e => console.log(e));
   }
 
-  initialLoading() {
-    let element = document.getElementsByClassName('conversations-content')[0];
-
-    if (
-      this.state.skip < this.state.count &&
-      element.scrollHeight - (element.scrollTop + element.clientHeight) <= 50
-    ) this.createConversations(true);
-  }
-
   checkScroll(event, element) {
     if (event) element = event.target;
 
@@ -77,27 +77,34 @@ class Messages extends React.Component {
     }
   }
 
-  createConversations(initial = false) {
+  createConversations() {
     this.state.loading = true;
     this.setState(this.state);
+    let element = document.getElementsByClassName('conversations-content')[0];
 
     getApiResponse('/villa-user-management/getConversations', {
-      jwt: this.jwt
+      ...this.auth,
+      _skip: this.state.skip
     })
       .then(data => {
         let conversations = new Array();
 
         for (let i = 0; i < data.length; i += 1) {
-          conversations.push(<Conversation socket={this.props.socket} data={data[i]} key={this.state.skip + i} />);
+          conversations.push(/*
+          <Conversation socket={this.props.socket} data={data[i]} key={this.state.skip + i} />
+          */
+          <p>
+            {data[i].lastMessage.text}
+          </p>
+         );
         }
 
         this.state.conversations =
-          this.state.conversations.concat(this.createConversations(data));
+          this.state.conversations.concat(conversations);
         this.state.skip += 10;
         this.state.loading = false;
-        this.setState(this.state);
 
-        if (initial) this.initialLoading();
+        this.setState(this.state);
       }, e => console.log(e));
   }
 

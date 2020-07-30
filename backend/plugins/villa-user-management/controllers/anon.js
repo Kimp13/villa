@@ -1,4 +1,4 @@
-let strapi = require('strapi');
+let strapi = global.strapi;
 
 module.exports = {
   async get(ctx, next) {
@@ -26,18 +26,12 @@ module.exports = {
           phoneNumber
         };
 
-    try {
-      firstBooking = JSON.parse(firstBooking);
-    } catch(e) {
-      firstBooking = false;
-    }
-
     name ? createQuery.name = name : null;
     surname ? createQuery.surname = surname : null;
 
-    const anon = await strapi.models.anonymoususer.create(createQuery);
+    const anon = await strapi.query('anonymoususer').create(createQuery);
 
-    const newConversation = await strapi.models.conversation.create({
+    const newConversation = await strapi.query('conversation').create({
       participants: [
         'anon' + anon.id,
         '1'
@@ -45,14 +39,21 @@ module.exports = {
     });
 
     if (firstBooking) {
-      const message = await strapi.models.message.create({
+      const message = await strapi.query('message').create({
         conversationId: newConversation.id,
         authorId: 'anon' + anon.id,
         type: 'booking',
-        text: firstBooking.from + '_' + firstBooking.to
+        text: firstBooking
+      });
+
+      strapi.query('conversation').update({
+        id: newConversation.id
+      },
+      {
+        lastMessage: message.id
       });
     }
 
-    console.log(newConversation);
+    ctx.send(JSON.stringify(anon));
   }
 }

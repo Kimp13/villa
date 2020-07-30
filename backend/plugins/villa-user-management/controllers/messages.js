@@ -1,46 +1,130 @@
-const strapi = require('strapi');
+const strapi = global.strapi,
+      getParamsFromUrl = require("../../../utils/searchToJson.js");
 
 module.exports = {
   async find(ctx) {
+    let query;
+
     try {
-      let body = ctx.request.body,
-          socket = strapi.io.sockets.connected[body.socketId],
-          conversationId = body.conversationId,
-          skip = body.skip || 0,
-          limit = body.limit || 50;
+      query = getParamsFromUrl(ctx.request.url);
+    } catch(e) {
+      ctx.throw(400);
+      return;
+    }
 
-      let query = {conversationId};
+    
+    if (query && query.conversationId) {
+      let user;
 
-      let conversation = await strapi.models.conversation.findOne({
-            id: conversationId
-          }),
-          response = await strapi.models.message.find(query)
-            .sort({
-              createdAt: -1
-            })
-            .limit(limit)
-            .skip(skip);
-
-      for (let i = 0; i < response.length; i += 1) {
-        response[i] = {
-          type: response[i].type,
-          text: response[i].text,
-          authorId: response[i].authorId,
-          attachments: response[i].attachments
+      if (query.jwt) {
+        try {
+          user = await strapi.plugins['users-permissions'].services.jwt.verify(query.jwt);
+        } catch(e) {
+          ctx.throw(401);
+          return;
         }
+
+        user.id = user.id.toString();
+      } else if (query.a) {
+        user = await strapi.query('anonymoususer').findOne({id: query.a});
+
+        if (user === null) {
+          ctx.throw(401);
+          return;
+        }
+
+        user.id = `anon${user.id}`;
+      } else {
+        ctx.throw(400);
+        return;
       }
 
-      ctx.send(JSON.stringify(response));
-    } catch(e) {
-      ctx.send('');
+      let conversation = await strapi.query('conversation').findOne({
+            id: query.conversationId
+          });
+
+      if (conversation) {
+        for (let i = 0; i < conversation.participants.length; i += 1) {
+          if (conversation.participants[i] === user.id) {
+            let messages = await strapi.query('message').find({
+              conversationId: conversation.id,
+              _limit: 50,
+              _start: query._skip || 0,
+              _sort: 'id:desc'
+            });
+
+            for (let i = 0; i < messages.length; i += 1) {
+              messages[i] = {
+                text: messages[i].text,
+                authorId: messages[i].authorId,
+                type: messages[i].type
+              }
+            }
+
+            ctx.send(JSON.stringify(messages));
+
+            return;
+          }
+        }
+      }
     }
+    ctx.throw(400);
   },
   async count(ctx) {
+    let query;
+
     try {
-      let response = await strapi.models.message.countDocuments({conversationId: ctx.request.body});
-      ctx.send(response.toString());
+      query = getParamsFromUrl(ctx.request.url);
     } catch(e) {
-      ctx.send('');
+      ctx.throw(400);
+      return;
     }
+
+    
+    if (query && query.conversationId) {
+      let user;
+
+      if (query.jwt) {
+        try {
+          user = await strapi.plugins['users-permissions'].services.jwt.verify(query.jwt);
+        } catch(e) {
+          ctx.throw(401);
+          return;
+        }
+
+        user.id = user.id.toString();
+      } else if (query.a) {
+        user = await strapi.query('anonymoususer').findOne({id: query.a});
+
+        if (user === null) {
+          ctx.throw(401);
+          return;
+        }
+
+        user.id = `anon${user.id}`;
+      } else {
+        ctx.throw(400);
+        return;
+      }
+
+      let conversation = await strapi.query('conversation').findOne({
+            id: query.conversationId
+          });
+
+      if (conversation) {
+        for (let i = 0; i < conversation.participants.length; i += 1) {
+          if (conversation.participants[i] === user.id) {
+            let count = await strapi.query('message').count({
+              conversationId: query.conversationId
+            });
+
+            ctx.send(count);
+
+            return;
+          }
+        }
+      }
+    }
+    ctx.throw(400);
   }
 }

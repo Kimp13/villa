@@ -95,10 +95,10 @@ export default class BookRoom extends React.Component {
     if (this.props.user.isAuthenticated) {
       window.location.href = '/messages';
     } else {
-      window.localStorage.setItem('firstBooking', JSON.stringify({
-        from: this.state.from,
-        to: this.state.to
-      }));
+      window.localStorage.setItem('firstBooking',
+        `${this.state.from.day}.${this.state.from.month}.${this.state.from.year}` +
+        `_${this.state.to.day}.${this.state.to.month}.${this.state.to.year}`
+      );
 
       window.location.href = '/messages/welcome';
     }

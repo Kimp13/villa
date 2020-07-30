@@ -41,7 +41,7 @@
       }
     },
     {
-      "method": "POST",
+      "method": "GET",
       "path": "/getMessages",
       "handler": "messages.find",
       "config": {
@@ -49,7 +49,7 @@
       }
     },
     {
-      "method": "POST",
+      "method": "GET",
       "path": "/getMessagesCount",
       "handler": "messages.count",
       "config": {

@@ -1,108 +1,143 @@
-const strapi = global.strapi;
-
-function getParamsFromUrl(url) {
-  let searchStart = url.indexOf('?'),
-      query = new Object();
-
-  if (searchStart === -1) {
-    return false;
-  }
-
-  let search = url.substring(searchStart + 1);
-
-  if (search.length === 0) {
-    return false;
-  }
-
-  search = search.split('&');
-
-  for (let i = 0; i < search.length; i += 1) {
-    let pair = search[i].split('=');
-
-    query[pair[0]] = pair[1];
-  }
-
-  return query;
-}
+const strapi = global.strapi,
+      getParamsFromUrl = require("../../../utils/searchToJson.js");
 
 module.exports = {
   find: async function (ctx) {
-    console.log(ctx);
+    let query;
 
-    let response = await strapi.query('conversation').find({
-          participants: socket.userId,
-          _limit: limit || 10,
-          _start: skip || 0
-        });
-
-    for (let i = 0; i < response.length; i += 1) {
-      let user;
-
-      for (let j = 0; j < response[i].participants.length; j += 1) {
-        if (response[i].participants[j].substring(0, 4) === 'anon') {
-          user = await strapi.query('anonymoususer').findOne({
-            id: response[i].participants[j].substring(4)
-          });
-        } else {
-          user = await strapi.query('user', 'users-permissions').findOne({
-            id: response[i].participants[j]
-          });
-        }
-
-        response[i].participants[j] = {
-          name: user.name,
-          surname: user.surname,
-          phoneNumber: user.phoneNumber,
-          id: user.id
-        };
-      }
-      let lastMessage = response[i].lastMessage;
-
-      if (lastMessage) {
-        lastMessage = await strapi.query('message').findOne({id: lastMessage});
-
-        lastMessage = {
-          type: lastMessage.type,
-          text: lastMessage.text,
-          authorId: lastMessage.authorId,
-        }
-      }
-
-      response[i] = {
-        id: response[i].id,
-        participants: response[i].participants,
-        lastMessage
-      };
+    try {
+      query = getParamsFromUrl(ctx.request.url);
+    } catch(e) {
+      ctx.throw(400);
+      return;
     }
 
-    return response;
-  },
-  count: async function (ctx) {
     try {
-      let query = getParamsFromUrl(ctx.request.url);
-
-      console.log(query);
-
       if (query) {
-        try {
-          let user = await strapi.plugins['users-permissions'].services.jwt.verify(query.jwt),
-              count = await strapi.query('conversation').count({
-                participants: user.id
-              });
+        let user;
 
-          ctx.send(count);
-        } catch(e) {
-          console.log(e);
+        if (query.jwt) {
+          user = await strapi.plugins['users-permissions'].services.jwt.verify(query.jwt);
+        } else if (query.a) {
+          user = await strapi.query('anonymoususer').findOne({id: query.a});
 
-          ctx.throw(401);
+          if (user) {
+            user.id = `anon${user.id}`;
+          } else {
+            ctx.throw(401);
+            return;
+          }
+
+          query._limit = 1;
+        } else {
+          ctx.throw(400);
+          return;
         }
+
+        let conversations = await strapi.query('conversation').find({
+              participants_containss: user.id,
+              _limit: query._limit || 10,
+              _start: query._skip || 0,
+              _sort: 'updated_at:desc'
+            });
+
+        for (let i = 0; i < conversations.length; i += 1) {
+          let participants = new Object();
+
+          for (let j = 0; j < conversations[i].participants.length; j += 1) {
+            let participant;
+
+            if (conversations[i].participants[j].substring(0, 4) === 'anon') {
+              participant = await strapi.query('anonymoususer')
+                .findOne({
+                  id: conversations[i].participants[j].substring(4)
+                });
+
+              participant.id = `anon${participant.id}`;
+            } else {
+              participant = await strapi.query('user', 'users-permissions')
+                .findOne({
+                  id: conversations[i].participants[j]
+                });
+            }
+
+            if (participant) {
+              participants[participant.id] = {
+                name: participant.name,
+                surname: participant.surname,
+                phoneNumber: participant.phoneNumber
+              }
+            }
+            conversations[i].participants[j] = null;
+          }
+
+          let lastMessage;
+
+          if (conversations[i].lastMessage !== null) {
+            lastMessage = await strapi.query('message').findOne({
+              id: conversations[i].lastMessage
+            });
+
+            conversations[i].lastMessage = {
+              authorId: lastMessage.authorId,
+              text: lastMessage.text,
+              type: lastMessage.type,
+              created_at: lastMessage.created_at
+            };
+          }
+
+          conversations[i] = {
+            id: conversations[i].id,
+            lastMessage: conversations[i].lastMessage,
+            participants
+          };
+        }
+
+        ctx.send(JSON.stringify(conversations));
       } else {
         ctx.throw(400);
       }
     } catch(e) {
       console.log(e);
 
+      ctx.throw(401);
+    }
+  },
+  count: async function (ctx) {
+    let query;
+
+    try {
+      query = getParamsFromUrl(ctx.request.url);
+    } catch(e) {
       ctx.throw(400);
+      return;
+    }
+
+    try {
+      if (query) {
+        if (query.jwt) {
+          let user = await strapi.plugins['users-permissions'].services.jwt.verify(query.jwt),
+              count = await strapi.query('conversation').count({
+                participants: user.id
+              });
+
+          ctx.send(count);
+        } else if (query.a) {
+          let user = await strapi.query('anonymoususer').findOne({id: query.a});
+
+          if (user) {
+            ctx.send(1);
+          } else {
+            ctx.throw(401);
+          }
+        } else {
+          ctx.throw(400);
+        }
+      } else {
+        ctx.throw(400);
+      }
+    } catch(e) {
+      ctx.throw(401);
     }
   }
 }
