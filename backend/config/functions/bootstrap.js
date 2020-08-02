@@ -25,6 +25,14 @@ module.exports = () => {
       const io = require('socket.io')(strapi.server),
             userManagement = strapi.plugins['villa-user-management'].controllers,
             emitUser = (socket, user, isAnonymous) => {
+              if (isAnonymous) {
+                user.id = 'anon' + user.id;
+              } else {
+                user.id = user.id.toString();
+              }
+
+              io.userToSocketId[user.id] = socket.id;
+
               socket.userId = user.id;
               socket.emit('user', {
                 isAuthenticated: true,
@@ -40,6 +48,8 @@ module.exports = () => {
                 isAuthenticated: false
               });
             };
+
+      io.userToSocketId = new Object();
 
       io.on('connection', socket => {
         let cookieString;
@@ -88,6 +98,48 @@ module.exports = () => {
             emitUnregisteredUser(socket);
           }
         }
+
+        socket.on('newMessage', data => {
+          strapi.query('conversation').findOne({
+            id: data.conversationId
+          })
+            .then(conversation => {
+              if (conversation) {
+                for (let i = 0; i < conversation.participants.length; i += 1) {
+                  if (conversation.participants[i] === socket.userId) {
+                    let createQuery = {
+                          authorId: socket.userId,
+                          conversationId: conversation.id,
+                          type: 'default',
+                          text: data.text
+                        };
+
+                  strapi.query('message').create(createQuery)
+                    .then(message => {
+                      for (let participant of conversation.participants) {
+                        io.to(strapi.io.userToSocketId[participant]).emit(
+                          'newMessage',
+                          createQuery
+                        );
+                      }
+
+                      strapi.query('conversation').update({
+                        id: conversation.id
+                      }, {
+                        lastMessage: message.id
+                      });
+                    }, e => console.log(e));
+                  }
+                }
+              }
+            }, e => console.log(e));
+        });
+
+        socket.on('disconnect', () => {
+          if (socket.userId) {
+            delete io.userToSocketId[socket.userId];
+          }
+        });
       });
 
       strapi.io = io;

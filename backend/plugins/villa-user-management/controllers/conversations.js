@@ -18,6 +18,8 @@ module.exports = {
 
         if (query.jwt) {
           user = await strapi.plugins['users-permissions'].services.jwt.verify(query.jwt);
+
+          user.id = user.id.toString();
         } else if (query.a) {
           user = await strapi.query('anonymoususer').findOne({id: query.a});
 
@@ -34,12 +36,38 @@ module.exports = {
           return;
         }
 
-        let conversations = await strapi.query('conversation').find({
-              participants_containss: user.id,
-              _limit: query._limit || 10,
-              _start: query._skip || 0,
-              _sort: 'updated_at:desc'
-            });
+        let conversations;
+
+        if (query.id) {
+          let i;
+
+          conversations = await strapi.query('conversation').findOne({
+            id: query.id
+          });
+
+          console.log(conversations.participants);
+
+          if (conversations) {
+            for (i = 0; i < conversations.participants.length; i += 1) {
+              if (conversations.participants[i] === user.id) {
+                conversations = [conversations];
+                break;
+              }
+            }
+          }
+
+          if (typeof(conversations) !== "object") {
+            ctx.throw(400);
+            return;
+          }
+        } else {
+          conversations = await strapi.query('conversation').find({
+            participants_containss: user.id,
+            _limit: 10,
+            _start: query._skip || 0,
+            _sort: 'updated_at:desc'
+          });
+        }
 
         for (let i = 0; i < conversations.length; i += 1) {
           let participants = new Object();
@@ -118,7 +146,7 @@ module.exports = {
         if (query.jwt) {
           let user = await strapi.plugins['users-permissions'].services.jwt.verify(query.jwt),
               count = await strapi.query('conversation').count({
-                participants: user.id
+                participants_containss: user.id
               });
 
           ctx.send(count);

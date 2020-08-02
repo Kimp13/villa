@@ -3,6 +3,7 @@ import React from "react";
 import Loader from "./Loader.js";
 
 import { shortenTextTo } from "../libraries/texts.js";
+import { getApiResponse, postApi } from "../libraries/requests.js";
 
 import "../public/styles/components/conversation.module.scss";
 
@@ -11,56 +12,96 @@ export default class Conversation extends React.Component {
     super(props);
 
     let update = () => {
-          if (this.state.opened && !this.state.loading) {
-            let messages = document.getElementsByClassName('conversation-content-message');
-            if (this.state.skip !== this.initialAmountOfMessages) {
-              let element = messages[49];
+          if (this.state.opened) {
+            if (!this.state.loading) {
+              let messages = 
+                    document.getElementsByClassName('conversation-content-message'),
+                  element;
+              
+              if (this.state.skip >= this.state.count) {
+                element = messages[(this.state.count - 1) % 50];
+              } else {
+                element = messages[49];
+              }
 
               element.scrollIntoView();
+            }
+          } else {
+            let elements = document.getElementsByClassName('conversation-content-message'),
+                length = elements.length;
 
-              this.checkScroll(false, element.parentNode);
-            } else {
-              messages[this.state.skip - 1].scrollIntoView();
+            for (let i = 0; i < length; i += 1) {
+              elements[0].remove();
+            }
+
+            elements = document.getElementsByClassName('conversation-content-author');
+            length = elements.length;
+
+            for (let i = 0; i < length; i += 1) {
+              elements[0].remove();
             }
           }
         };
+
+    this.newMessageHandler = data => {
+      if (data.conversationId === this.props.data.id) {
+        let container = document.getElementsByClassName('conversation-content')[0],
+            newMessage = document.createElement('p');
+
+        this.lastMessage = data;
+        this.state.skip += 1;
+        this.state.count += 1;
+
+        if (this.state.messages[0].authorId !== data.authorId) {
+          let newAuthor = document.createElement('p');
+
+          newAuthor.classList.add('conversation-content-author');
+          newAuthor.innerHTML =
+            data.authorId === this.props.socket.user.id ?
+            'Вы' :
+            this.props.data.participants[data.authorId].name;
+
+          container.append(newAuthor);
+        }
+
+        this.state.messages.unshift(data);
+
+        newMessage.classList.add('conversation-content-message');
+        newMessage.innerHTML = data.text;
+
+        container.append(newMessage);
+
+        window.requestAnimationFrame(() => newMessage.scrollIntoView());
+      }
+    };
     
     String.prototype.cleanInside = function() {
-      return this.replace(/\s\s+/g, ' ');
+      return this.replace(/  +/g, ' ').replace(/\n\n+/g, '\n');
     };
 
     this.state = {
       opened: false,
       loading: true,
       skip: 0,
-      scrollDisabled: false
-    }
+      scrollDisabled: false,
+      messages: new Array()
+    };
 
-    this.getMessages(true)
-      .then(data => {
-        this.getMessagesCount()
-          .then(count => {
-            let scrollDisabled = (count <= 50);
-            if (scrollDisabled) {
-              this.componentDidUpdate = null;
-            } else {
-              this.componentDidUpdate = update;
-            }
-            this.setState({
-              messages: data[0],
-              loading: false,
-              skip: data[1],
-              opened: this.state.opened,
-              count,
-              scrollDisabled
-            });
-            this.participants = Object();
-            for (let participant of this.props.data.participants) {
-              this.participants[participant.id] = participant;
-            }
-            this.initialAmountOfMessages = data[1];
-          });
-      });
+    getApiResponse('/villa-user-management/getMessagesCount', {
+      ...this.props.auth,
+      conversationId: this.props.data.id
+    }).then(count => {
+      if (count <= 50) {
+        this.state.scrollDisabled = true;
+      }
+
+      this.componentDidUpdate = update;
+
+      this.state.count = count;
+      this.addMessages();
+    }, e => console.log(e));
+
+    this.lastMessage = this.props.data.lastMessage;
 
     this.toggle = this.toggle.bind(this);
     this.checkScroll = this.checkScroll.bind(this);
@@ -68,47 +109,42 @@ export default class Conversation extends React.Component {
     this.inputTextarea = this.inputTextarea.bind(this);
   }
 
-  async getMessages(firstTime) {
-    let limit = 50;
-    if (firstTime) {
-      let fontSize = window.innerHeight / 50,
-          parentSize = window.innerHeight - 4.5 * fontSize,
-          messagesAmount = parseInt(parentSize / fontSize) + 1;
+  addMessages() {
+    this.state.loading = true;
+    this.setState(this.state);
 
-      if (messagesAmount > limit) {
-        limit = messagesAmount;
-      }
-    }
-    let response = await fetch(window.location.origin + ':1337/villa-user-management/getMessages',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          skip: this.state.skip,
-          socketId: this.props.socket.id,
-          conversationId: this.props.data.id,
-          limit
-        })
-      }
-    );
-    response = await response.json();
-    return firstTime ? [response, limit] : response;
-  }
+    getApiResponse('/villa-user-management/getMessages', {
+      ...this.props.auth,
+      _skip: this.state.skip,
+      conversationId: this.props.data.id
+    })
+      .then(data => {
+        this.state.skip += 50;
+        this.state.messages = this.state.messages.concat(data);
 
-  async getMessagesCount() {
-    let response = await fetch(window.location.origin + ':1337/villa-user-management/getMessagesCount',
-      {
-        method: 'POST',
-        body: this.props.data.id
-      }
-    );
-    return parseInt(await response.text());
+        if (this.state.skip >= this.state.count) {
+          this.state.scrollDisabled = true;
+        }
+
+        this.state.loading = false;
+        this.setState(this.state);
+      }, e => console.log(e));
   }
 
   toggle() {
-    this.state.opened = !this.state.opened;
+    if (this.state.opened) {
+      this.props.socket.off('newMessage', this.newMessageHandler);
+      this.state.opened = false;
+      this.state.messages.unshift(...(this.props.newMessages.reverse()));
+      this.state.skip += this.props.newMessages.length;
+      this.state.count += this.props.newMessages.length;
+      this.props.onClosing();
+    } else {
+      this.props.onOpening();
+      this.props.socket.on('newMessage', this.newMessageHandler);
+      this.state.opened = true;
+    }
+
     this.setState(this.state);
   }
 
@@ -116,102 +152,117 @@ export default class Conversation extends React.Component {
     if (!this.state.loading) {
       if (event) element = event.target;
 
-      if (element.scrollTop < 50) {
-        this.state.loading = true;
-        this.getMessages().then(newMessages => {
-          this.state.messages = this.state.messages.concat(newMessages);
-          this.state.loading = false;
-          this.setState(this.state);
-          this.state.skip += 50;
-          if (this.state.skip >= this.state.count) {
-            this.componentDidUpdate = null;
-            this.state.scrollDisabled = true;
-            this.setState(this.state);
-            document.getElementsByClassName('conversation-content-message')[this.state.count % 50].scrollIntoView();
-          } else {
-            this.setState(this.state);
-          }
-        });
-      }
+      if (element.scrollTop < 50) this.addMessages();
     }
   }
 
   getNumberOfLines(value) {
     let result = 1;
+
     for (let i = 0; i < value.length; i += 1) {
       if (value.charAt(i) === '\n') {
         result += 1;
       }
     }
+
     return result;
   }
 
-  sendMessage(e, value) {
-    if (e) value = e.target.previousElementSibling.value.trim().cleanInside();
+  sendMessage(e, field) {
+    if (e) {
+      e.preventDefault();
+      let target = e.target;
+
+      while (target.nodeName !== 'BUTTON') {
+        target = target.parentNode;
+      }
+
+      field = target.previousElementSibling;
+    }
+
+    let value = field.value.trim().cleanInside();
+
     if (value.length > 0) {
       this.props.socket.emit('newMessage', {
-        author: this.props.socket.user.id
+        ...this.props.auth,
+        text: value,
+        conversationId: this.props.data.id
       });
     }
+
+    field.value = '';
   }
 
   inputTextarea(e) {
-    if (e.key === 'Enter' && e.ctrlKey) {
-      e.preventDefault();
-      this.sendMessage(false, e.target.value.trim().cleanInside());
-    } else {
-      e.target.style.height = `${e.target.scrollHeight}px`;
+    if (e.key === 'Enter') {
+      if (!(e.ctrlKey || e.shiftKey)) {
+        this.sendMessage(false, e.target);
+      }
     }
+    e.target.style.height = `${this.getNumberOfLines(e.target.value) * 1.5}rem`;
   }
 
   render() {
-    let conversationName;
-    for (let participant of this.props.data.participants) {
-      if (participant.id !== this.props.socket.user.id) {
-        if (conversationName === undefined) {
-          conversationName = participant.name;
-        } else {
-          conversationName = `${conversationName}, ${participant.name}`;
+    let conversationName = new String(),
+        participantsIds = Object.keys(this.props.data.participants);
+
+    for (let key of participantsIds) {
+      if (key !== this.props.socket.user.id) {
+        if (conversationName.length > 0) {
+          conversationName += ', ';
+        }
+
+        conversationName += this.state.opened ?
+          this.props.data.participants[key].name + ' ' +
+          this.props.data.participants[key].surname :
+          this.props.data.participants[key].name;
+
+        if (this.props.socket.user.isRoot) {
+          conversationName += ` (${this.props.data.participnats[key].phoneNumber})`;
         }
       }
     }
+
     if (this.state.opened) {
-      let messages = Array();
+      let messages = new Array();
       if (this.state.count > 0) {
-        let authorName,
-            messagesCount = this.state.messages.length - 1,
-            authorId = this.state.messages[messagesCount].authorId; 
+        let messagesCount = this.state.messages.length - 1,
+            authorId = this.state.messages[messagesCount].authorId,
+            authorName;
 
         if (this.state.loading) {
-          messages.push(<Loader />);
+          messages.push(<Loader key="l"/>);
         }
 
-        if (authorId === this.props.socket.user.id) {
-          authorName = 'Вы';
-        } else {
-          authorName = this.participants[authorId].name;
-        }
+        authorName = authorId === this.props.socket.user.id ?
+                      'Вы' :
+                      this.props.data.participants[authorId].name;
+
         messages.push(
           <p className="conversation-content-author" key="as">
             {authorName}
           </p>
         );
+
         messages.push(
           <p className="conversation-content-message" key={messagesCount}>
             {this.state.messages[messagesCount].text}
           </p>
         );
+
         for (let i = messagesCount - 1; i >= 0; i -= 1) {
-          let authorId = this.state.messages[i].authorId;
+          authorId = this.state.messages[i].authorId;
+
+          console.log(this.state.messages[i]);
+
           if (authorId !== this.state.messages[i + 1].authorId) {
-            if (authorId === this.props.socket.user.id) {
-              authorName = 'Вы';
-            } else {
-              authorName = this.participants[authorId].name;
-            }
             messages.push(
               <p className="conversation-content-author" key={'a' + i}>
-                {authorName}
+                {
+                  (authorId === this.props.socket.user.id) ?
+                    'Вы' :
+                    this.props.data.participants[authorId].name
+                }
               </p>
             );
           }
@@ -221,14 +272,68 @@ export default class Conversation extends React.Component {
             </p>
           );
         }
+
+        if (this.props.newMessages.length > 0) {
+          this.state.skip += this.props.newMessages.length;
+          this.state.count += this.props.newMessages.length;
+
+          messages.push(
+            <p className="conversation-content-new" key={'new'}>
+              Новые сообщения
+            </p>
+          );
+
+          let authorId = this.props.newMessages[0].authorId;
+
+          messages.push(
+            <p className="conversation-content-author" key={'na' + 0}>
+              {authorId === this.props.socket.user.id ?
+                'Вы' :
+                this.props.data.participants[authorId].name}
+            </p>
+          );
+
+          messages.push(
+            <p className="conversation-content-message" key={'n' + 0}>
+              {this.props.newMessages[0].text}
+            </p>
+          );
+
+          for (let i = 1; i < this.props.newMessages.length; i += 1) {
+            authorId = this.props.newMessages[i].authorId;
+            if (authorId !== this.props.newMessages[i - 1].authorId) {
+              messages.push(
+                <p className="conversation-content-author" key={'na' + i}>
+                  {
+                    (authorId === this.props.socket.user.id) ?
+                      'Вы' :
+                      this.props.data.participants[authorId].name
+                  }
+                </p>
+              );
+            }
+            messages.push(
+              <p className="conversation-content-message" key={'n' + i}>
+                {this.props.newMessages[i].text}
+              </p>
+            );
+          }
+        }
       } else {
-        messages = [];
+        messages = [
+          <p className="conversation-content-null" key="0">
+            Нет сообщений
+          </p>
+        ];
       }
 
       return (
         <div className="conversation opened">
           <h3 className="conversation-header">
-            {'Чат с: ' + shortenTextTo(conversationName, 50)}
+            {
+              (participantsIds.length > 2 ? 'Чат с: ' : '') +
+                shortenTextTo(conversationName, 256)
+            }
             <button className="opened" onClick={this.toggle}>
               <i className="fas fa-times"/>
             </button>
@@ -236,46 +341,63 @@ export default class Conversation extends React.Component {
           <div className="conversation-content" onScroll={this.state.scrollDisabled ? null : this.checkScroll}>
             {messages}
           </div>
-          <form className="conversation-send" onSubmit={this.sendMessage}>
+          <form className="conversation-send">
             <textarea className="conversation-send-textarea" onKeyUp={this.inputTextarea} />
-            <button className="conversation-send-submit" type="submit">
+            <button className="conversation-send-submit" onClick={this.sendMessage}>
               <i className="fas fa-paper-plane" />
             </button>
           </form>
         </div>
       );
     } else {
-      let lastMessage;
+      let lastMessage,
+          newMessagesCounter = null;
+
+      this.lastMessage = this.props.data.lastMessage;
+
       if (this.state.count > 0) {
-        let authorId = this.props.data.lastMessage.authorId,
+        let authorId = this.lastMessage.authorId,
             authorName;
 
         if (authorId === this.props.socket.user.id) {
           authorName = 'Вы:';
         } else {
-          authorName = `${this.participants[authorId].name}:`;
+          authorName = `${this.props.data.participants[authorId].name}:`;
         }
 
         lastMessage = (
           <React.Fragment>
-            <span className="conversation-content-author">{authorName}</span>
-            {shortenTextTo(this.props.data.lastMessage.text, 120)}
+            <span className="conversation-last-message-author">{authorName}</span>
+            {shortenTextTo(this.lastMessage.text, 120)}
           </React.Fragment>
         );
       } else {
-        lastMessage = <span className="conversation-content-null">Нет сообщений</span>;
+        lastMessage = 
+          <span className="conversation-last-message-null">Нет сообщений</span>;
+      }
+
+      if (this.props.newMessages.length > 0) {
+        newMessagesCounter = <div className="conversation-last-counter">
+                              {this.props.newMessages.length}
+                             </div>
       }
         
       return (
         <div className={"conversation"} onClick={this.toggle}>
           <h3 className="conversation-header">
-            {'Чат с: ' + shortenTextTo(conversationName, 50)}
+            {
+              (participantsIds.length > 2 ? 'Чат с: ' : '') +
+                shortenTextTo(conversationName, 80)
+            }
             <button>
               <i className="fas fa-times"/>
             </button>
           </h3>
-          <div className="conversation-content">
-            {lastMessage}
+          <div className="conversation-last">
+            <div className="conversation-last-message">
+              {lastMessage}
+            </div>
+            {newMessagesCounter}
           </div>
         </div>
       );

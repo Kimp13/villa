@@ -40,10 +40,6 @@ module.exports = {
 
     if (firstBooking) {
       const message = await strapi.query('message').create({
-        conversationId: newConversation.id,
-        authorId: 'anon' + anon.id,
-        type: 'booking',
-        text: firstBooking
       });
 
       strapi.query('conversation').update({
@@ -53,6 +49,13 @@ module.exports = {
         lastMessage: message.id
       });
     }
+
+    strapi.io.to(strapi.io.userToSocketId['1']).emit('newMessage', {
+      conversationId: newConversation.id,
+      authorId: 'anon' + anon.id,
+      type: 'booking',
+      text: firstBooking
+    });
 
     ctx.send(JSON.stringify(anon));
   }

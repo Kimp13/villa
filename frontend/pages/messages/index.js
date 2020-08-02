@@ -27,8 +27,51 @@ class Messages extends React.Component {
     } else if (jwt && this.props.socket.user.isAnonymous === false) {
       this.auth = {jwt};
     } else {
-      window.loaction.href = '/auth';
+      window.location.href = '/auth';
     }
+
+    this.newMessageHandler = data => {
+      for (let i = 0; i < this.state.conversations.length; i += 1) { 
+        if (data.conversationId === this.state.conversations[i].data.id) {
+          let conversation = this.state.conversations.splice(i, 1)[0];
+          
+          conversation.data.lastMessage = data;
+
+          this.state.conversations.unshift({
+            data: conversation.data,
+            key: conversation.key,
+            newMessages: conversation.newMessages.concat(data)
+          });
+
+          if (!this.state.conversationOpened) {
+            this.setState(this.state);
+          }
+
+          return;
+        }
+      }
+
+      getApiResponse('/villa-user-management/getConversations', {
+        ...this.auth,
+        id: data.conversationId
+      })
+        .then(conversation => {
+          console.log(conversation[0]);
+          this.state.skip += 1;
+
+          this.state.conversations.unshift({
+            data: conversation[0],
+            key: this.state.count,
+            newMessages: new Array()
+          });
+
+          this.state.count += 1;
+          this.setState(this.state);
+        });
+    };
+
+    this.props.socket.off('newMessage');
+    this.props.socket.on('newMessage', this.newMessageHandler);
 
     this.state = {
       conversations: new Array(),
@@ -37,6 +80,7 @@ class Messages extends React.Component {
     }
 
     this.checkScroll = this.checkScroll.bind(this);
+    this.conversationOpened = this.conversationOpened.bind(this);
 
     getApiResponse("/villa-user-management/getConversationsCount", this.auth)
       .then(count => {
@@ -90,13 +134,11 @@ class Messages extends React.Component {
         let conversations = new Array();
 
         for (let i = 0; i < data.length; i += 1) {
-          conversations.push(/*
-          <Conversation socket={this.props.socket} data={data[i]} key={this.state.skip + i} />
-          */
-          <p>
-            {data[i].lastMessage.text}
-          </p>
-         );
+          conversations.push({
+            key: this.state.skip + i,
+            data: data[i],
+            newMessages: new Array()
+          });
         }
 
         this.state.conversations =
@@ -108,15 +150,49 @@ class Messages extends React.Component {
       }, e => console.log(e));
   }
 
+  conversationOpened() {
+    this.state.conversationOpened = true;
+  }
+
+  conversationClosed(index) {
+    this.state.conversations[index].newMessages = new Array();
+    this.state.conversationOpened = false;
+    this.setState(this.state);
+  }
+
   render() {
+    let conversations = new Array();
+
+    for (let i = 0; i < this.state.conversations.length; i += 1) {
+      conversations.push(
+        <Conversation
+          auth={this.auth}
+          socket={this.props.socket}
+          onOpening={this.conversationOpened}
+          onClosing={() => this.conversationClosed(i)}
+          newMessages={this.state.conversations[i].newMessages}
+          data={this.state.conversations[i].data}
+          key={this.state.conversations[i].key}
+        />
+      );
+    }
+
     return (
       <div className="conversations">
         <div className="conversations-header">
           Сообщения
         </div>
         <div className="conversations-content" onScroll={this.checkScroll}>
-          {this.state.conversations}
-          {this.state.loading ? <Loader itemsCount={4} animationDuration={2000} animationDelay={100}/> : null }
+          {conversations}
+          {
+            this.state.loading ?
+              <Loader
+                itemsCount={4}
+                animationDuration={2000}
+                animationDelay={100}
+              /> :
+              null
+          }
         </div>
       </div>
     );

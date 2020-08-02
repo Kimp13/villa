@@ -20,6 +20,11 @@
     max-height: 100%;
     overflow: auto;
     display: flex;
+    justify-content: center;
     flex-wrap: wrap;
+    &-null {
+      padding: 1rem 0 0;
+      color: gray;
+    }
   }
 }
