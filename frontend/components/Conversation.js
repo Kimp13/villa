@@ -13,12 +13,12 @@ export default class Conversation extends React.Component {
 
     let update = () => {
           if (this.state.opened) {
-            if (!this.state.loading) {
+            if (!this.state.loading && this.state.count > 0) {
               let messages = 
                     document.getElementsByClassName('conversation-content-message'),
                   element;
               
-              if (this.state.skip >= this.state.count) {
+              if (this.state.skip > this.state.count) {
                 element = messages[(this.state.count - 1) % 50];
               } else {
                 element = messages[49];
@@ -52,7 +52,8 @@ export default class Conversation extends React.Component {
         this.state.skip += 1;
         this.state.count += 1;
 
-        if (this.state.messages[0].authorId !== data.authorId) {
+        if (this.state.messages[0] && 
+            this.state.messages[0].authorId !== data.authorId) {
           let newAuthor = document.createElement('p');
 
           newAuthor.classList.add('conversation-content-author');
@@ -74,6 +75,8 @@ export default class Conversation extends React.Component {
         window.requestAnimationFrame(() => newMessage.scrollIntoView());
       }
     };
+
+    this.rooms = new Object();
     
     String.prototype.cleanInside = function() {
       return this.replace(/  +/g, ' ').replace(/\n\n+/g, '\n');
@@ -202,6 +205,124 @@ export default class Conversation extends React.Component {
     e.target.style.height = `${this.getNumberOfLines(e.target.value) * 1.5}rem`;
   }
 
+  createBooking(messageId, accepted, parts) {
+    postApi('/villa-user-management/createBooking', {
+      ...this.props.auth,
+      messageId,
+      accepted,
+      roomId: parts[0],
+      from: parts[1],
+      to: parts[2]
+    });
+  }
+
+  closeBooking(message, ref, parts) {
+    this.createBooking(message.id, false, parts);
+
+    ref.current.children[0].classList.remove('pending');
+    ref.current.children[0].classList.add('rejected');
+    ref.current.children[0].innerHTML = 'Закрытое бронирование';
+    ref.current.children[2].style.display = 'none';
+
+    message.text += '_rejected';
+  }
+
+  acceptBooking(message, ref, parts) {
+    this.createBooking(message.id, true, parts);
+
+    ref.current.children[0].classList.remove('pending');
+    ref.current.children[0].classList.add('accepted');
+    ref.current.children[0].innerHTML = 'Принятое бронирование';
+    ref.current.children[2].style.display = 'none';
+
+    message.text += '_accepted';
+  }
+
+  createMessage(message, key) {
+    if (message.type === 'booking') {
+      let parts = message.text.split('_'),
+          newText,
+          elementClassName,
+          footer = null,
+          messageRef = React.createRef(),
+          paragraphText;
+
+      if (this.rooms[parts[0]]) {
+        paragraphText = this.rooms[parts[0]];
+      } else {
+        paragraphText = 'Загрузка номера...';
+        getApiResponse(`/rooms/${parts[0]}`).then(room => {
+          this.rooms[parts[0]] = room.name;
+          messageRef
+            .current
+            .children[1]
+            .children[0]
+            .innerHTML = `Номер: ${room.name}`;
+        }, e => {
+          console.log(e);
+          messageRef
+            .current
+            .children[1]
+            .children[0]
+            .innerHTML = `Ошибка загрузки комнаты.`;
+        });
+      }
+
+      if (parts[3] === 'rejected') {
+        newText = `Бронирование закрыто`;
+        elementClassName = 'rejected';
+      } else if (parts[3] === 'accepted') {
+        newText = `Бронирование принято`;
+        elementClassName = 'accepted';
+      } else {
+        newText = `Заявка на бронирование`;
+        elementClassName = 'pending';
+        if (this.props.socket.user.isRoot) {
+          footer = (
+            <div className="conversation-content-message-footer">
+              <button
+                onClick={() => this.closeBooking(message, messageRef, parts)}
+              >
+                Закрыть
+              </button>
+              <button
+                onClick={() => this.acceptBooking(message, messageRef, parts)}
+              >
+                Принять
+              </button>
+            </div>
+          );
+        }
+      }
+
+      return (
+        <div ref={messageRef} className="conversation-content-message booking" key={key}>
+          <div className={elementClassName}>
+            {newText}
+          </div>
+          <div>
+            <p>
+              {paragraphText}
+            </p>
+            <p>
+              {`Заезд: ${parts[1]}`}
+            </p>
+            <p>
+              {`Отъезд: ${parts[2]}`}
+            </p>
+          </div>
+          {footer}
+        </div>
+      );
+    }
+
+    return (
+      <p className="conversation-content-message" key={key}>
+        {message.text}
+      </p>
+    );
+  }
+
   render() {
     let conversationName = new String(),
         participantsIds = Object.keys(this.props.data.participants);
@@ -218,7 +339,7 @@ export default class Conversation extends React.Component {
           this.props.data.participants[key].name;
 
         if (this.props.socket.user.isRoot) {
-          conversationName += ` (${this.props.data.participnats[key].phoneNumber})`;
+          conversationName += ` (${this.props.data.participants[key].phoneNumber})`;
         }
       }
     }
@@ -245,15 +366,11 @@ export default class Conversation extends React.Component {
         );
 
         messages.push(
-          <p className="conversation-content-message" key={messagesCount}>
-            {this.state.messages[messagesCount].text}
-          </p>
+          this.createMessage(this.state.messages[messagesCount], messagesCount)
         );
 
         for (let i = messagesCount - 1; i >= 0; i -= 1) {
           authorId = this.state.messages[i].authorId;
-
-          console.log(this.state.messages[i]);
 
           if (authorId !== this.state.messages[i + 1].authorId) {
             messages.push(
@@ -267,9 +384,7 @@ export default class Conversation extends React.Component {
             );
           }
           messages.push(
-            <p className="conversation-content-message" key={i}>
-              {this.state.messages[i].text}
-            </p>
+            this.createMessage(this.state.messages[i], i)
           );
         }
 
@@ -294,9 +409,7 @@ export default class Conversation extends React.Component {
           );
 
           messages.push(
-            <p className="conversation-content-message" key={'n' + 0}>
-              {this.props.newMessages[0].text}
-            </p>
+            this.createMessage(this.props.newMessages[0], 'n' + 0)
           );
 
           for (let i = 1; i < this.props.newMessages.length; i += 1) {
@@ -313,9 +426,7 @@ export default class Conversation extends React.Component {
               );
             }
             messages.push(
-              <p className="conversation-content-message" key={'n' + i}>
-                {this.props.newMessages[i].text}
-              </p>
+              this.createMessage(this.props.newMessages[i], 'n' + i)
             );
           }
         }
@@ -365,12 +476,38 @@ export default class Conversation extends React.Component {
           authorName = `${this.props.data.participants[authorId].name}:`;
         }
 
-        lastMessage = (
-          <React.Fragment>
-            <span className="conversation-last-message-author">{authorName}</span>
-            {shortenTextTo(this.lastMessage.text, 120)}
-          </React.Fragment>
-        );
+        if (this.lastMessage.type === 'booking') {
+          let parts = this.lastMessage.text.split('_'),
+              text,
+              elementClassName;
+
+          if (parts[2] === 'rejected') {
+            text = `Закрытое бронирование с ${parts[0]} по ${parts[1]}`;
+            elementClassName = 'rejected';
+          } else if (parts[2] === 'accepted') {
+            text = `Принятое бронирование с ${parts[0]} по ${parts[1]}`;
+            elementClassName = 'accepted';
+          } else {
+            text = `Заявка на бронирование с ${parts[0]} по ${parts[1]}`;
+            elementClassName = 'pending';
+          }
+
+          lastMessage = (
+            <React.Fragment>
+              <span className="conversation-last-message-author">{authorName}</span>
+              <span className={`conversation-last-message-booking ${elementClassName}`}>
+                {text}
+              </span>
+            </React.Fragment>
+          );
+        } else {
+          lastMessage = (
+            <React.Fragment>
+              <span className="conversation-last-message-author">{authorName}</span>
+              {shortenTextTo(this.lastMessage.text, 120)}
+            </React.Fragment>
+          );
+        }
       } else {
         lastMessage = 
           <span className="conversation-last-message-null">Нет сообщений</span>;

@@ -96,7 +96,8 @@ export default class BookRoom extends React.Component {
       window.location.href = '/messages';
     } else {
       window.localStorage.setItem('firstBooking',
-        `${this.state.from.day}.${this.state.from.month}.${this.state.from.year}` +
+        `${this.props.roomId}` + 
+        `_${this.state.from.day}.${this.state.from.month}.${this.state.from.year}` +
         `_${this.state.to.day}.${this.state.to.month}.${this.state.to.year}`
       );
 

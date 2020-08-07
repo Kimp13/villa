@@ -11,11 +11,10 @@
  */
 
 module.exports = {
-  /**
-   * Simple example.
-   * Every monday at 1am.
-   */
-  // '0 1 * * 1': () => {
-  //
-  // }
+  '0 0 * * *': () => {
+    let date = new Date();
+    global.strapi.query('booking').delete({
+      to_lt: date
+    });
+  }
 };

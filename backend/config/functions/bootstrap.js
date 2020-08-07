@@ -36,6 +36,7 @@ module.exports = () => {
               socket.userId = user.id;
               socket.emit('user', {
                 isAuthenticated: true,
+                isRoot: (user.role && user.role.type === 'root'),
                 isAnonymous,
                 id: user.id,
                 name: user.name,

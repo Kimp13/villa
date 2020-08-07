@@ -70,8 +70,11 @@ export default function () {
   }
 
   return (
-    <div className="rooms-container">
-      {roomElements}
-    </div>
+    <>
+      <div className="rooms-container">
+        <h2>Номера</h2>
+        {roomElements}
+      </div>
+    </>
   );
 };

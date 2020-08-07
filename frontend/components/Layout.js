@@ -1,8 +1,7 @@
 import React from "react";
 import Head from "next/head";
-import Header from "../components/Header";
-
-import "../public/styles/components/layout.module.scss";
+import Header from "./Header";
+import Footer from "./Footer";
 
 export default function(props) {
   const child = React.cloneElement(props.children, {socket: props.socket}),
@@ -10,7 +9,10 @@ export default function(props) {
                   <title>
                     {props.title + ' | Villa Guest House на Фиоленте'}
                   </title> :
-                  null;
+                null,
+        footer = props.footerEnabled ?
+                  <Footer /> :
+                 null;
 
   return (
     <div>
@@ -27,6 +29,7 @@ export default function(props) {
       </Head>
       <Header user={props.socket.user}/>
       {child}
+      {footer}
     </div>
   );
 };

@@ -1,8 +1,6 @@
 import React from "react";
 import Link from "next/link";
 
-import "../public/styles/components/header.module.scss";
-
 export default class Header extends React.Component {
   constructor(props) {
     super(props);

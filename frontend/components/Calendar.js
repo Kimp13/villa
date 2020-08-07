@@ -88,7 +88,45 @@ export default class Calendar extends React.Component {
   }
 
   returnThisMonthBookings(bookings, month, year, from, to) {
-    let result = [], i = 0;
+    function dateSmallerNonStrict(first, second) {
+      if (first.year < second.year) {
+        return true;
+      }
+
+      if (first.year === second.year) {
+        if (first.month < second.month) {
+          return true;
+        }
+
+        return (first.month === second.month && first.day <= second.day);
+      }
+
+      return false;
+    }
+
+    function mergeBookings(arr) {
+      const length = arr.length;
+      let i, result = new Array();
+
+      for (i = 0; i < length; i += 1) {
+        let itemToPush = arr[i];
+
+        while (i + 1 < length && dateSmallerNonStrict(arr[i], arr[i + 1])) {
+          i += 1;
+          itemToPush.to.year = arr[i].to.year;
+          itemToPush.to.month = arr[i].to.month;
+          itemToPush.to.day = arr[i].to.day;
+        }
+
+        result.push(itemToPush);
+      }
+
+      return result;
+    }
+
+    let result = [],
+        i = 0;
+    if (i === bookings.length) return [];
     while (bookings[i].to.year < year) {
       i += 1;
       if (i === bookings.length) return [];
@@ -105,13 +143,13 @@ export default class Calendar extends React.Component {
     if (bookings[i].from.month > month) return [];
     result.push(bookings[i]);
     i += 1;
-    if (i === bookings.length) return result;
+    if (i === bookings.length) return mergeBookings(result);
     while (bookings[i].from.month === month && bookings[i].from.day <= to) {
       result.push(bookings[i]);
       i += 1;
-      if (i === bookings.length) return result;
+      if (i === bookings.length) return mergeBookings(result);
     }
-    return result;
+    return mergeBookings(result);
   }
 
   switchMonth(event) {

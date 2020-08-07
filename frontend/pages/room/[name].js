@@ -14,7 +14,8 @@ export async function getServerSideProps({ params }) {
   if (room && !room.isUtility) {
     let bookings = new Array(),
         roomBookings = await getApiResponse('/bookings', {
-          roomId: room.id
+          roomId: room.id,
+          _sort: 'from:asc'
         });
 
     for (let i = 0; i < roomBookings.length; i += 1) {
@@ -31,12 +32,6 @@ export async function getServerSideProps({ params }) {
         }
       });
     }
-    bookings.sort((a, b) => {
-      [a, b] = [a.from, b.from];
-      if (a.year !== b.year) return a.year - b.year;
-      else if (a.month !== b.month) return a.month - b.month;
-      else return a.day - b.day;
-    });
     return {
       props: {
         room: room,
@@ -70,33 +65,42 @@ export async function getServerSideProps({ params }) {
 }
 
 export default ({ room, serverTime, bookings, convertNumberToMonth, socket }) => {
-  let todate = new Date(),
-      from = {
-        day: todate.getDate(),
-        month: todate.getMonth() + 1,
-        year: todate.getFullYear()
-      },
-      to = {
-        day: 31,
-        month: 12,
-        year: 2020
-      };
-      
-  return (
-  <>
-    <Head>
-      <title>
-        {room.name + ' | Villa Guest House на Фиоленте'}
-      </title>
-    </Head>
-    <IntroductionDiv content={room} />
-    <BookRoom
-      user={socket.user}
-      convertNumberToMonth={convertNumberToMonth}
-      bookings={bookings}
-      priceInfo={room.priceInfo}
-      from={from}
-      to={to}
-    />
-  </>
-)};
+  if (room) {
+    let todate = new Date(),
+        from = {
+          day: todate.getDate(),
+          month: todate.getMonth() + 1,
+          year: todate.getFullYear()
+        },
+        to;
+
+    todate.setTime(todate.getTime() + 8640000000);
+
+    to = {
+      day: todate.getDate(),
+      month: todate.getMonth() + 1,
+      year: todate.getFullYear()
+    };
+        
+    return (
+      <>
+        <Head>
+          <title>
+            {room.name + ' | Villa Guest House на Фиоленте'}
+          </title>
+        </Head>
+        <IntroductionDiv content={room} />
+        <BookRoom
+          user={socket.user}
+          convertNumberToMonth={convertNumberToMonth}
+          bookings={bookings}
+          priceInfo={room.priceInfo}
+          roomId={room.id}
+          from={from}
+          to={to}
+        />
+      </>
+    );
+  }
+  return null;
+};

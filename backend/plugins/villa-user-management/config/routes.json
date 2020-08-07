@@ -55,6 +55,14 @@
       "config": {
         "policies": []
       }
+    },
+    {
+      "method": "POST",
+      "path": "/createBooking",
+      "handler": "bookings.create",
+      "config": {
+        "policies": []
+      }
     }
   ]
 }

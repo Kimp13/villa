@@ -57,7 +57,8 @@ module.exports = {
               messages[i] = {
                 text: messages[i].text,
                 authorId: messages[i].authorId,
-                type: messages[i].type
+                type: messages[i].type,
+                id: messages[i].id
               }
             }
 

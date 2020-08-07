@@ -39,8 +39,13 @@ module.exports = {
     });
 
     if (firstBooking) {
-      const message = await strapi.query('message').create({
-      });
+      const query = {
+              type: 'booking',
+              authorId: 'anon' + anon.id,
+              conversationId: newConversation.id,
+              text: firstBooking
+            },
+            message = await strapi.query('message').create(query);
 
       strapi.query('conversation').update({
         id: newConversation.id
@@ -48,14 +53,9 @@ module.exports = {
       {
         lastMessage: message.id
       });
-    }
 
-    strapi.io.to(strapi.io.userToSocketId['1']).emit('newMessage', {
-      conversationId: newConversation.id,
-      authorId: 'anon' + anon.id,
-      type: 'booking',
-      text: firstBooking
-    });
+      strapi.io.to(strapi.io.userToSocketId['1']).emit('newMessage', query);
+    }
 
     ctx.send(JSON.stringify(anon));
   }

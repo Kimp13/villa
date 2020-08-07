@@ -1,0 +1,41 @@
+@import '../foundation/variables';
+
+main {
+  margin-bottom: 1rem;
+  .content-flex-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+    & > * {
+      padding: 0 1rem;
+      h2 {
+        text-align: center;
+        margin: .5rem;
+      }
+    }
+
+    .rooms-container {
+      flex: 500px 2;
+    }
+
+    .news-container {
+      flex: 250px 1;
+    }
+
+    .yandex-reviews,
+    .yandex-map {
+      iframe {
+        height: 30rem;
+        width: 100%;
+      }
+    }
+
+    .yandex-reviews {
+      flex: 250px 1;
+    }
+
+    .yandex-map {
+      flex: 500px 2;
+    }
+  }
+}

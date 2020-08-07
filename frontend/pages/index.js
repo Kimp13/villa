@@ -3,9 +3,7 @@ import Rooms from "../components/Rooms";
 import News from "../components/News";
 import { getApiResponse, getFullLink } from "../libraries/requests";
 
-import "../public/styles/pages/index.module.scss";
-
-export async function getServerSideProps() {
+export async function getStaticProps() {
   let Villa = (await getApiResponse('/rooms', {
     name: 'Villa'
   }))[0];
@@ -28,19 +26,30 @@ export async function getServerSideProps() {
   return {
     props: {
       main: Villa,
-      title: 'Главная'
+      title: 'Главная',
+      footerEnabled: true
     }
   }
 }
 
 export default function({ main }) {
   return (
-    <>
+    <main>
       <IntroductionDiv content={main}/>
       <div className="content-flex-wrapper">
         <Rooms/>
         <News/>
       </div>
-    </>
+      <div className="content-flex-wrapper">
+        <div className="yandex-map">
+          <h2>Карта</h2>
+          <iframe src="https://yandex.ru/map-widget/v1/-/CCQpZDwAHA"/>
+        </div>
+        <div className="yandex-reviews">
+          <h2>Отзывы</h2>
+          <iframe src="https://yandex.ru/maps-reviews-widget/5012059488?comments"/>
+        </div>
+      </div>
+    </main>
   );
 };
