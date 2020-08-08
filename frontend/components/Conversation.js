@@ -1,18 +1,49 @@
 import React from "react";
 
-import Loader from "./Loader.js";
+import Loader from "./Loader";
 
 import { shortenTextTo } from "../libraries/texts.js";
 import { getApiResponse, postApi } from "../libraries/requests.js";
 
 import "../public/styles/components/conversation.module.scss";
 
+class RejectConfirmation extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
+    let styleObject;
+
+    if (this.props.shown) {
+      styleObject = {};
+    } else {
+      styleObject = {display: 'none'};
+    }
+
+    return (
+      <div
+        className="confirmation-wrapper"
+        style={{
+          display: this.props.shown ?
+                   'block' :
+                   'none'
+        }}
+      >
+        <div className="confirmation">
+          You really want to reject it? Have you thought twice?
+        </div>
+      </div>
+    );
+  }
+}
+
 export default class Conversation extends React.Component {
   constructor(props) {
     super(props);
 
     let update = () => {
-          if (this.state.opened) {
+          if (this.state.opened && !this.state.rejectConfirmation) {
             if (!this.state.loading && this.state.count > 0) {
               let messages = 
                     document.getElementsByClassName('conversation-content-message'),
@@ -27,7 +58,8 @@ export default class Conversation extends React.Component {
               element.scrollIntoView();
             }
           } else {
-            let elements = document.getElementsByClassName('conversation-content-message'),
+            let elements = 
+                  document.getElementsByClassName('conversation-content-message'),
                 length = elements.length;
 
             for (let i = 0; i < length; i += 1) {
@@ -43,38 +75,20 @@ export default class Conversation extends React.Component {
           }
         };
 
-    this.newMessageHandler = data => {
-      if (data.conversationId === this.props.data.id) {
-        let container = document.getElementsByClassName('conversation-content')[0],
-            newMessage = document.createElement('p');
-
-        this.lastMessage = data;
-        this.state.skip += 1;
-        this.state.count += 1;
-
-        if (this.state.messages[0] && 
-            this.state.messages[0].authorId !== data.authorId) {
-          let newAuthor = document.createElement('p');
-
-          newAuthor.classList.add('conversation-content-author');
-          newAuthor.innerHTML =
-            data.authorId === this.props.socket.user.id ?
-            'Вы' :
-            this.props.data.participants[data.authorId].name;
-
-          container.append(newAuthor);
-        }
-
-        this.state.messages.unshift(data);
-
-        newMessage.classList.add('conversation-content-message');
-        newMessage.innerHTML = data.text;
-
-        container.append(newMessage);
-
-        window.requestAnimationFrame(() => newMessage.scrollIntoView());
+    this.props.socket.on('newMessage', data => {
+      if (data.conversationId === props.data.id) {
+        this.setState((state, props) => {
+          if (state.opened) {
+            this.pushMessages([data], state, props);
+          } else {
+            state.newMessages.push(data);
+          }
+          console.log(data);
+          state.lastMessage = data;
+          return state;
+        });
       }
-    };
+    });
 
     this.rooms = new Object();
     
@@ -84,27 +98,46 @@ export default class Conversation extends React.Component {
 
     this.state = {
       opened: false,
+      rejectConfirmation: false,
       loading: true,
-      skip: 0,
       scrollDisabled: false,
-      messages: new Array()
+      skip: 0,
+      lastMessage: this.props.data.lastMessage,
+      messages: new Array(),
+      newMessages: new Array()
     };
 
     getApiResponse('/villa-user-management/getMessagesCount', {
       ...this.props.auth,
       conversationId: this.props.data.id
     }).then(count => {
-      if (count <= 50) {
-        this.state.scrollDisabled = true;
+      if (count > 0) {
+        if (count <= 50) {
+          this.state.scrollDisabled = true;
+          if (count === 0) {
+            this.state.messages = [
+
+            ];
+          }
+        }
+
+        this.componentDidUpdate = update;
+
+        this.state.count = count;
+        this.addMessages();
+      } else {
+        this.setState((state, props) => {
+          state.scrollDisabled = true;
+          state.messages = [
+            <p className="conversation-content-null" key="n">
+              Нет сообщений
+            </p>
+          ];
+          state.count = 0;
+          return state;
+        });
       }
-
-      this.componentDidUpdate = update;
-
-      this.state.count = count;
-      this.addMessages();
     }, e => console.log(e));
-
-    this.lastMessage = this.props.data.lastMessage;
 
     this.toggle = this.toggle.bind(this);
     this.checkScroll = this.checkScroll.bind(this);
@@ -122,33 +155,35 @@ export default class Conversation extends React.Component {
       conversationId: this.props.data.id
     })
       .then(data => {
-        this.state.skip += 50;
-        this.state.messages = this.state.messages.concat(data);
-
-        if (this.state.skip >= this.state.count) {
-          this.state.scrollDisabled = true;
+        if (data) {
+          data = data.reverse();
         }
 
-        this.state.loading = false;
-        this.setState(this.state);
+        this.setState((state, props) => {
+          this.pushMessages(data, state, props);
+
+          state.skip += 50;
+
+          if (state.skip >= this.state.count) {
+            state.scrollDisabled = true;
+          }
+
+          state.loading = false;
+          return state;
+        });
       }, e => console.log(e));
   }
 
   toggle() {
-    if (this.state.opened) {
-      this.props.socket.off('newMessage', this.newMessageHandler);
-      this.state.opened = false;
-      this.state.messages.unshift(...(this.props.newMessages.reverse()));
-      this.state.skip += this.props.newMessages.length;
-      this.state.count += this.props.newMessages.length;
-      this.props.onClosing();
-    } else {
-      this.props.onOpening();
-      this.props.socket.on('newMessage', this.newMessageHandler);
-      this.state.opened = true;
-    }
+    this.setState((state, props) => {
+      if (state.opened) {
+        state.opened = false;
+      } else {
+        state.opened = true;
+      }
 
-    this.setState(this.state);
+      return state;
+    });
   }
 
   checkScroll(event, element) {
@@ -216,35 +251,31 @@ export default class Conversation extends React.Component {
     });
   }
 
-  closeBooking(message, ref, parts) {
-    this.createBooking(message.id, false, parts);
+  closeBooking(index, data, parts) {
+    //this.createBooking(message.id, false, parts);
 
-    ref.current.children[0].classList.remove('pending');
-    ref.current.children[0].classList.add('rejected');
-    ref.current.children[0].innerHTML = 'Закрытое бронирование';
-    ref.current.children[2].style.display = 'none';
-
-    message.text += '_rejected';
+    this.setState((state, props) => {
+      data.text += '_rejected';
+      state.messages[index] = this.createMessage(data, state.messages[index].key);
+      return state;
+    });
   }
 
-  acceptBooking(message, ref, parts) {
-    this.createBooking(message.id, true, parts);
-
-    ref.current.children[0].classList.remove('pending');
-    ref.current.children[0].classList.add('accepted');
-    ref.current.children[0].innerHTML = 'Принятое бронирование';
-    ref.current.children[2].style.display = 'none';
-
-    message.text += '_accepted';
+  acceptBooking(index, data, parts) {
+    //this.createBooking(message.id, true, parts);
+    this.setState((state, props) => {
+      data.text += '_accepted';
+      state.messages[index] = this.createMessage(data, state.messages[index].key);
+      return state;
+    });
   }
 
-  createMessage(message, key) {
-    if (message.type === 'booking') {
-      let parts = message.text.split('_'),
+  createMessage(data, key) {
+    if (data.type === 'booking') {
+      let parts = data.text.split('_'),
+          footer = null,
           newText,
           elementClassName,
-          footer = null,
-          messageRef = React.createRef(),
           paragraphText;
 
       if (this.rooms[parts[0]]) {
@@ -253,18 +284,8 @@ export default class Conversation extends React.Component {
         paragraphText = 'Загрузка номера...';
         getApiResponse(`/rooms/${parts[0]}`).then(room => {
           this.rooms[parts[0]] = room.name;
-          messageRef
-            .current
-            .children[1]
-            .children[0]
-            .innerHTML = `Номер: ${room.name}`;
         }, e => {
           console.log(e);
-          messageRef
-            .current
-            .children[1]
-            .children[0]
-            .innerHTML = `Ошибка загрузки комнаты.`;
         });
       }
 
@@ -278,15 +299,20 @@ export default class Conversation extends React.Component {
         newText = `Заявка на бронирование`;
         elementClassName = 'pending';
         if (this.props.socket.user.isRoot) {
+          let length = this.state.messages.length;
           footer = (
             <div className="conversation-content-message-footer">
               <button
-                onClick={() => this.closeBooking(message, messageRef, parts)}
+                onClick={
+                  () => this.closeBooking(length, data, parts)
+                }
               >
                 Закрыть
               </button>
               <button
-                onClick={() => this.acceptBooking(message, messageRef, parts)}
+                onClick={
+                  () => this.acceptBooking(length, data, parts)
+                }
               >
                 Принять
               </button>
@@ -296,7 +322,11 @@ export default class Conversation extends React.Component {
       }
 
       return (
-        <div ref={messageRef} className="conversation-content-message booking" key={key}>
+        <div
+          className="conversation-content-message booking"
+          data-author-id={data.authorId}
+          key={key}
+        >
           <div className={elementClassName}>
             {newText}
           </div>
@@ -314,13 +344,37 @@ export default class Conversation extends React.Component {
           {footer}
         </div>
       );
+    } else {
+      return (
+        <p
+          className="conversation-content-message"
+          data-author-id={data.authorId} 
+          key={key}
+        >
+          {data.text}
+        </p>
+      );
     }
+  }
 
-    return (
-      <p className="conversation-content-message" key={key}>
-        {message.text}
-      </p>
-    );
+  pushMessages(messages, state, props) {
+    for (let i = 0; i < messages.length; i += 1) {
+      let key = state.skip + i;
+
+      if (key === 0 ||
+          state.messages[state.messages.length - 1].props['data-author-id'] !==
+          messages[i].authorId) {
+        state.messages.push(
+          <p className="conversation-content-author" key={'a' + key}>
+            {messages[i].authorId === props.socket.user.id ?
+              'Вы' :
+              props.data.participants[messages[i].authorId].name}
+          </p>
+        );
+      }
+
+      state.messages.push(this.createMessage(messages[i], key));
+    }
   }
 
   render() {
@@ -329,113 +383,33 @@ export default class Conversation extends React.Component {
 
     for (let key of participantsIds) {
       if (key !== this.props.socket.user.id) {
+        let participant = this.props.data.participants[key];
+
         if (conversationName.length > 0) {
           conversationName += ', ';
         }
 
         conversationName += this.state.opened ?
-          this.props.data.participants[key].name + ' ' +
-          this.props.data.participants[key].surname :
-          this.props.data.participants[key].name;
+          participant.name + ' ' +
+          participant.surname :
+          participant.name;
 
         if (this.props.socket.user.isRoot) {
-          conversationName += ` (${this.props.data.participants[key].phoneNumber})`;
+          conversationName += ` (${participant.phoneNumber})`;
         }
       }
     }
 
     if (this.state.opened) {
-      let messages = new Array();
-      if (this.state.count > 0) {
-        let messagesCount = this.state.messages.length - 1,
-            authorId = this.state.messages[messagesCount].authorId,
-            authorName;
-
-        if (this.state.loading) {
-          messages.push(<Loader key="l"/>);
-        }
-
-        authorName = authorId === this.props.socket.user.id ?
-                      'Вы' :
-                      this.props.data.participants[authorId].name;
-
-        messages.push(
-          <p className="conversation-content-author" key="as">
-            {authorName}
+      if (this.state.newMessages.length > 0) {
+        this.state.messages.push(
+          <p className="conversation-content-null">
+            Новые сообщения
           </p>
         );
 
-        messages.push(
-          this.createMessage(this.state.messages[messagesCount], messagesCount)
-        );
-
-        for (let i = messagesCount - 1; i >= 0; i -= 1) {
-          authorId = this.state.messages[i].authorId;
-
-          if (authorId !== this.state.messages[i + 1].authorId) {
-            messages.push(
-              <p className="conversation-content-author" key={'a' + i}>
-                {
-                  (authorId === this.props.socket.user.id) ?
-                    'Вы' :
-                    this.props.data.participants[authorId].name
-                }
-              </p>
-            );
-          }
-          messages.push(
-            this.createMessage(this.state.messages[i], i)
-          );
-        }
-
-        if (this.props.newMessages.length > 0) {
-          this.state.skip += this.props.newMessages.length;
-          this.state.count += this.props.newMessages.length;
-
-          messages.push(
-            <p className="conversation-content-new" key={'new'}>
-              Новые сообщения
-            </p>
-          );
-
-          let authorId = this.props.newMessages[0].authorId;
-
-          messages.push(
-            <p className="conversation-content-author" key={'na' + 0}>
-              {authorId === this.props.socket.user.id ?
-                'Вы' :
-                this.props.data.participants[authorId].name}
-            </p>
-          );
-
-          messages.push(
-            this.createMessage(this.props.newMessages[0], 'n' + 0)
-          );
-
-          for (let i = 1; i < this.props.newMessages.length; i += 1) {
-            authorId = this.props.newMessages[i].authorId;
-            if (authorId !== this.props.newMessages[i - 1].authorId) {
-              messages.push(
-                <p className="conversation-content-author" key={'na' + i}>
-                  {
-                    (authorId === this.props.socket.user.id) ?
-                      'Вы' :
-                      this.props.data.participants[authorId].name
-                  }
-                </p>
-              );
-            }
-            messages.push(
-              this.createMessage(this.props.newMessages[i], 'n' + i)
-            );
-          }
-        }
-      } else {
-        messages = [
-          <p className="conversation-content-null" key="0">
-            Нет сообщений
-          </p>
-        ];
+        this.pushMessages(this.state.newMessages, this.state, this.props);
+        this.state.newMessages = new Array();
       }
 
       return (
@@ -449,25 +423,35 @@ export default class Conversation extends React.Component {
               <i className="fas fa-times"/>
             </button>
           </h3>
-          <div className="conversation-content" onScroll={this.state.scrollDisabled ? null : this.checkScroll}>
-            {messages}
+          <div
+            className="conversation-content"
+            onScroll={this.state.scrollDisabled ? null : this.checkScroll}
+          >
+            {this.state.messages}
           </div>
           <form className="conversation-send">
-            <textarea className="conversation-send-textarea" onKeyUp={this.inputTextarea} />
+            <textarea
+              className="conversation-send-textarea"
+              placeholder="Напишите сообщение..."
+              onKeyUp={this.inputTextarea}
+            />
             <button className="conversation-send-submit" onClick={this.sendMessage}>
               <i className="fas fa-paper-plane" />
             </button>
           </form>
+          <RejectConfirmation
+            shown={this.state.rejectConfirmation}
+          />
         </div>
       );
     } else {
       let lastMessage,
           newMessagesCounter = null;
 
-      this.lastMessage = this.props.data.lastMessage;
+      this.state.lastMessage = this.props.data.lastMessage;
 
       if (this.state.count > 0) {
-        let authorId = this.lastMessage.authorId,
+        let authorId = this.state.lastMessage.authorId,
             authorName;
 
         if (authorId === this.props.socket.user.id) {
@@ -476,19 +460,19 @@ export default class Conversation extends React.Component {
           authorName = `${this.props.data.participants[authorId].name}:`;
         }
 
-        if (this.lastMessage.type === 'booking') {
-          let parts = this.lastMessage.text.split('_'),
+        if (this.state.lastMessage.type === 'booking') {
+          let parts = this.state.lastMessage.text.split('_'),
               text,
               elementClassName;
 
           if (parts[2] === 'rejected') {
-            text = `Закрытое бронирование с ${parts[0]} по ${parts[1]}`;
+            text = `Закрытое бронирование с ${parts[1]} по ${parts[2]}`;
             elementClassName = 'rejected';
           } else if (parts[2] === 'accepted') {
-            text = `Принятое бронирование с ${parts[0]} по ${parts[1]}`;
+            text = `Принятое бронирование с ${parts[1]} по ${parts[2]}`;
             elementClassName = 'accepted';
           } else {
-            text = `Заявка на бронирование с ${parts[0]} по ${parts[1]}`;
+            text = `Заявка на бронирование с ${parts[1]} по ${parts[2]}`;
             elementClassName = 'pending';
           }
 
@@ -504,7 +488,7 @@ export default class Conversation extends React.Component {
           lastMessage = (
             <React.Fragment>
               <span className="conversation-last-message-author">{authorName}</span>
-              {shortenTextTo(this.lastMessage.text, 120)}
+              {shortenTextTo(this.state.lastMessage.text, 120)}
             </React.Fragment>
           );
         }
@@ -513,9 +497,9 @@ export default class Conversation extends React.Component {
           <span className="conversation-last-message-null">Нет сообщений</span>;
       }
 
-      if (this.props.newMessages.length > 0) {
+      if (this.state.newMessages.length > 0) {
         newMessagesCounter = <div className="conversation-last-counter">
-                              {this.props.newMessages.length}
+                              {this.state.newMessages.length}
                              </div>
       }
         

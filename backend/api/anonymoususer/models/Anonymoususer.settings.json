@@ -10,10 +10,12 @@
   },
   "attributes": {
     "name": {
-      "type": "string"
+      "type": "string",
+      "default": "Аноним"
     },
     "surname": {
-      "type": "string"
+      "type": "string",
+      "default": "Анонимус"
     },
     "phoneNumber": {
       "type": "string"

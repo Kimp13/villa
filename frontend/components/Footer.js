@@ -18,7 +18,7 @@ export default function () {
         <p>
           <i className="fas fa-phone" />
           <a target="_blank" href="tel:79785766940">
-            +79785766940
+            +79785025000
           </a>
         </p>
         <p>

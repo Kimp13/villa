@@ -51,7 +51,8 @@ export async function getServerSideProps({ params }) {
           'Ноябрь',
           'Декабрь'
         ],
-        title: room.name
+        title: room.name,
+        footerEnabled: true
       }
     }
   }

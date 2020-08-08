@@ -1,5 +1,26 @@
 @import "../foundation/variables";
 
+.confirmation-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  z-index: 2;
+  background: rgba(black, .4);
+
+  .confirmation {
+    margin: 3rem auto;
+    padding: 1rem;
+    max-width: 80%;
+    width: 20rem;
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 0 .1rem gray;
+  }
+}
+
 .conversation {
   flex: 1 500px;
   margin: 1rem;

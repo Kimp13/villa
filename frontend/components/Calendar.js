@@ -56,35 +56,38 @@ export default class Calendar extends React.Component {
   }
 
   getFirstBooking(bookings, start, forwards) {
-    let i;
-    if (forwards) {
-      i = 0;
-      while (bookings[i].from.year < start.year) {
-        if (++i === bookings.length) return false;
+    if (bookings.length > 0) {
+      let i;
+      if (forwards) {
+        i = 0;
+        while (bookings[i].from.year < start.year) {
+          if (++i === bookings.length) return false;
+        }
+        if (bookings[i].from.year !== start.year) return bookings[i];
+        while (bookings[i].from.month < start.month) {
+          if (++i === bookings.length) return false;
+        }
+        if (bookings[i].from.month !== start.month) return bookings[i];
+        while (bookings[i].from.day < start.day) {
+          if (++i === bookings.length) return false;
+        }
+        return bookings[i];
       }
-      if (bookings[i].from.year !== start.year) return bookings[i];
-      while (bookings[i].from.month < start.month) {
-        if (++i === bookings.length) return false;
+      i = bookings.length - 1;
+      while (bookings[i].to.year > start.year) {
+        if (i-- === 0) return false;
       }
-      if (bookings[i].from.month !== start.month) return bookings[i];
-      while (bookings[i].from.day < start.day) {
-        if (++i === bookings.length) return false;
+      if (bookings[i].to.year !== start.year) return bookings[i];
+      while (bookings[i].to.month > start.month) {
+        if (i-- === 0) return false;
+      }
+      if (bookings[i].to.month !== start.month) return bookings[i];
+      while (bookings[i].to.day > start.day) {
+        if (i-- === 0) return false;
       }
       return bookings[i];
     }
-    i = bookings.length - 1;
-    while (bookings[i].to.year > start.year) {
-      if (i-- === 0) return false;
-    }
-    if (bookings[i].to.year !== start.year) return bookings[i];
-    while (bookings[i].to.month > start.month) {
-      if (i-- === 0) return false;
-    }
-    if (bookings[i].to.month !== start.month) return bookings[i];
-    while (bookings[i].to.day > start.day) {
-      if (i-- === 0) return false;
-    }
-    return bookings[i];
+    return false;
   }
 
   returnThisMonthBookings(bookings, month, year, from, to) {

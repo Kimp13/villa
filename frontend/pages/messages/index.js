@@ -32,23 +32,7 @@ class Messages extends React.Component {
 
     this.newMessageHandler = data => {
       for (let i = 0; i < this.state.conversations.length; i += 1) { 
-        if (data.conversationId === this.state.conversations[i].data.id) {
-          let conversation = this.state.conversations.splice(i, 1)[0];
-          
-          conversation.data.lastMessage = data;
-
-          this.state.conversations.unshift({
-            data: conversation.data,
-            key: conversation.key,
-            newMessages: conversation.newMessages.concat(data)
-          });
-
-          if (!this.state.conversationOpened) {
-            this.setState(this.state);
-          }
-
-          return;
-        }
+        return;
       }
 
       getApiResponse('/villa-user-management/getConversations', {
@@ -56,13 +40,12 @@ class Messages extends React.Component {
         id: data.conversationId
       })
         .then(conversation => {
-          console.log(conversation[0]);
           this.state.skip += 1;
 
           this.state.conversations.unshift({
             data: conversation[0],
             key: this.state.count,
-            newMessages: new Array()
+            newMessages: new Array(data)
           });
 
           this.state.count += 1;
@@ -70,7 +53,6 @@ class Messages extends React.Component {
         });
     };
 
-    this.props.socket.off('newMessage');
     this.props.socket.on('newMessage', this.newMessageHandler);
 
     this.state = {
@@ -80,7 +62,6 @@ class Messages extends React.Component {
     }
 
     this.checkScroll = this.checkScroll.bind(this);
-    this.conversationOpened = this.conversationOpened.bind(this);
 
     getApiResponse("/villa-user-management/getConversationsCount", this.auth)
       .then(count => {
@@ -97,11 +78,7 @@ class Messages extends React.Component {
         } else {
           this.setState({
             loading: false,
-            conversations: [
-              <p className="conversations-content-null" key="0">
-                Нет разговоров
-              </p>
-            ],
+            noConversations: true,
             skip: 0,
             count
           });
@@ -150,31 +127,25 @@ class Messages extends React.Component {
       }, e => console.log(e));
   }
 
-  conversationOpened() {
-    this.state.conversationOpened = true;
-  }
-
-  conversationClosed(index) {
-    this.state.conversations[index].newMessages = new Array();
-    this.state.conversationOpened = false;
-    this.setState(this.state);
-  }
-
   render() {
-    let conversations = new Array();
+    let conversations;
+    
+    if (this.state.noConversations) {
+      conversations = <p className="conversations-content-null">Нет разговоров</p>;
+    } else {
+      conversations = new Array();
 
-    for (let i = 0; i < this.state.conversations.length; i += 1) {
-      conversations.push(
-        <Conversation
-          auth={this.auth}
-          socket={this.props.socket}
-          onOpening={this.conversationOpened}
-          onClosing={() => this.conversationClosed(i)}
-          newMessages={this.state.conversations[i].newMessages}
-          data={this.state.conversations[i].data}
-          key={this.state.conversations[i].key}
-        />
-      );
+      for (let i = 0; i < this.state.conversations.length; i += 1) {
+        conversations.push(
+          <Conversation
+            auth={this.auth}
+            socket={this.props.socket}
+            newMessages={this.state.conversations[i].newMessages}
+            data={this.state.conversations[i].data}
+            key={this.state.conversations[i].key}
+          />
+        );
+      }
     }
 
     return (
