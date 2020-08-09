@@ -37,20 +37,6 @@ export async function getServerSideProps({ params }) {
         room: room,
         serverTime: serverTime.time,
         bookings: bookings,
-        convertNumberToMonth: [
-          'Январь',
-          'Февраль',
-          'Март',
-          'Апрель',
-          'Май',
-          'Июнь',
-          'Июль',
-          'Август',
-          'Сентябрь',
-          'Октябрь',
-          'Ноябрь',
-          'Декабрь'
-        ],
         title: room.name,
         footerEnabled: true
       }
@@ -65,7 +51,7 @@ export async function getServerSideProps({ params }) {
   }
 }
 
-export default ({ room, serverTime, bookings, convertNumberToMonth, socket }) => {
+export default ({ room, serverTime, bookings, socket }) => {
   if (room) {
     let todate = new Date(),
         from = {
@@ -93,7 +79,6 @@ export default ({ room, serverTime, bookings, convertNumberToMonth, socket }) =>
         <IntroductionDiv content={room} />
         <BookRoom
           user={socket.user}
-          convertNumberToMonth={convertNumberToMonth}
           bookings={bookings}
           priceInfo={room.priceInfo}
           roomId={room.id}

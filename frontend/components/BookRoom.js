@@ -1,33 +1,131 @@
 import React from "react";
 
-import Calendar from "../components/Calendar";
+import ChooseDate from "./ChooseDate";
 
-import "../public/styles/components/bookRoom.module.scss";
+import {
+  incrementDate,
+  getDaysAmountInMonthOfYear,
+  dateSmallerNonStrict
+} from "../libraries/dates";
+
+import "../public/styles/components/bookRoom.scss";
 
 export default class BookRoom extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      calendarShown: false,
-      provoker: null,
       from: null,
       to: null,
-      price: null
     }
 
-    this.calendarRef = React.createRef();
+    const length = this.props.bookings.length;
+    let i, result = new Array();
 
-    this.showCalendar = this.showCalendar.bind(this);
+    for (i = 0; i < length; i += 1) {
+      let itemToPush = this.props.bookings[i];
+
+      while (i + 1 < length &&
+        dateSmallerNonStrict(this.props.bookings[i], this.props.bookings[i + 1])) {
+        i += 1;
+        itemToPush.to.year = this.props.bookings[i].to.year;
+        itemToPush.to.month = this.props.bookings[i].to.month;
+        itemToPush.to.day = this.props.bookings[i].to.day;
+      }
+
+      result.push(itemToPush);
+    }
+
+    this.bookings = result;
+
     this.book = this.book.bind(this);
+    this.getData = this.getData.bind(this);
   }
 
-  makeDateString(date) {
-    return `${date.day}.${date.month}.${date.year}`;
+  countPrice(from, to) {
+    let getDatePrices = (day, month) => {
+      if ((dates[0].month > month) || (dates[0].month === month && dates[0].day >= day)) {
+        return this.props.priceInfo[dateStrings[dates.length - 1]].slice();
+      }
+
+      for (let i = 1; i < dates.length; i += 1) {
+        if ((dates[i].month > month) || (dates[i].month === month && dates[i].day > day)) {
+          return this.props.priceInfo[dateStrings[i - 1]].slice();
+        }
+      }
+
+      return this.props.priceInfo[dateStrings[dates.length - 1]].slice();
+    },
+        dates = new Array(),
+        dateStrings = Object.keys(this.props.priceInfo);
+
+    if (this.props.priceInfo) {
+      let previousMonth = from.month,
+          previousMonthDayCount = getDaysAmountInMonthOfYear(from.month, from.year),
+          prices,
+          newPrices;
+
+      for (let i = 0; i < dateStrings.length; i += 1) {
+        dates.push({
+          day: parseInt(dateStrings[i].substring(0, 2)),
+          month: parseInt(dateStrings[i].substring(3))
+        });
+      }
+
+      prices = getDatePrices(from.day, from.month);
+      from = incrementDate(from, previousMonthDayCount);
+
+      while (from.year < to.year) {
+        if (from.month !== previousMonth) {
+          previousMonth = from.month;
+          previousMonthDayCount = getDaysAmountInMonthOfYear(from.month, from.year);
+        }
+
+        newPrices = getDatePrices(from.day, from.month);
+
+        for (let i = 0; i < prices.length; i += 1) {
+          prices[i] += newPrices[i];
+        }
+
+        from = incrementDate(from, previousMonthDayCount);
+      }
+      while (from.month < to.month) {
+        if (from.month !== previousMonth) {
+          previousMonth = from.month;
+          previousMonthDayCount = getDaysAmountInMonthOfYear(from.month, from.year);
+        }
+
+        newPrices = getDatePrices(from.day, from.month);
+
+        for (let i = 0; i < prices.length; i += 1) {
+          prices[i] += newPrices[i];
+        }
+
+        from = incrementDate(from, previousMonthDayCount);
+      }
+
+      previousMonth = from.month;
+      previousMonthDayCount = getDaysAmountInMonthOfYear(from.month, from.year);
+
+      while (from.day < to.day) {
+        newPrices = getDatePrices(from.day, from.month);
+
+        for (let i = 0; i < prices.length; i += 1) {
+          prices[i] += newPrices[i];
+        }
+
+        from = incrementDate(from, previousMonthDayCount);
+      }
+
+      return prices;
+    }
+
+    return null;
   }
 
   createPrices() {
-    if (this.state.price !== null) {
+    if (this.state.from && this.state.to) {
+      let price = this.countPrice(this.state.from, this.state.to);
       let head = (
             <tr key="0">
               <th key="0">Количество<br/>гостей</th>
@@ -36,11 +134,11 @@ export default class BookRoom extends React.Component {
           ),
           body = new Array();
 
-      for (let i = 0; i < this.state.price.length; i += 1) {
+      for (let i = 0; i < price.length; i += 1) {
         body.push(
           <tr key={i + 1}>
             <td key="0">{i + 1}</td>
-            <td key="1">{this.state.price[i]}</td>
+            <td key="1">{price[i]}</td>
           </tr>
         );
       }
@@ -64,32 +162,6 @@ export default class BookRoom extends React.Component {
     }
   }
 
-  showCalendar(event) {
-    let target = event.target;
-
-    while (target.nodeName.toLowerCase() !== 'div') {
-      target = target.parentNode;
-    }
-
-    if (this.state.provoker === null) {
-      this.setState({
-        calendarShown: true,
-        provoker: target,
-        from: null,
-        to: null,
-        price: null
-      });
-    } else {
-      this.setState({
-        calendarShown: false,
-        provoker: null,
-        from: null,
-        to: null,
-        price: null
-      });
-    }
-  }
-
   book(event) {
     event.preventDefault();
     if (this.props.user.isAuthenticated) {
@@ -105,11 +177,19 @@ export default class BookRoom extends React.Component {
     }
   }
 
+  getData(from, to) {
+    this.setState((state, props) => {
+      state.from = from;
+      state.to = to;
+
+      return state;
+    });
+  }
+
   render() {
-    let inputs = [],
-        calendarStyle,
-        submitButton,
-        calendar;
+    let submitButton;
+
+    console.log(this.state);
 
     if (this.state.from && this.state.to) {
       submitButton = (
@@ -124,80 +204,6 @@ export default class BookRoom extends React.Component {
       submitButton = null;
     }
 
-    if (this.state.provoker === null) {
-      calendar = (
-        <Calendar
-          parentClass={this}
-          bookings={this.props.bookings}
-          convertNumberToMonth={this.props.convertNumberToMonth}
-          target={this.state.provoker}
-          show={this.state.calendarShown}
-          from={this.props.from}
-          to={this.props.to}
-        />
-      );
-      inputs.push(
-        <div key={0} className="from input-date clickable" onClick={this.showCalendar}>
-          {this.state.from ? this.makeDateString(this.state.from) : 'Дата заезда'}
-          <i className="fas fa-caret-down" />
-        </div>
-      );
-      inputs.push(
-        <div key={1} className="to input-date clickable" onClick={this.showCalendar}>
-          {this.state.to ? this.makeDateString(this.state.to) : 'Дата выезда'}
-          <i className="fas fa-caret-down" />
-        </div>
-      );
-    } else {
-      calendar = (
-        <div className="calendar-wrapper">
-          <Calendar
-            parentClass={this}
-            bookings={this.props.bookings}
-            convertNumberToMonth={this.props.convertNumberToMonth}
-            target={this.state.provoker} show={this.state.calendarShown}
-            from={this.props.from}
-            to={this.props.to}
-          />
-        </div>
-      );
-      if (this.state.provoker.classList[0] === 'from') {
-        inputs.push(
-          <div
-            key={0}
-            className="from input-date clickable turned"
-            onClick={this.showCalendar}
-          >
-            {this.state.from ? this.makeDateString(this.state.from) : 'Дата заезда'}
-            <i className="fas fa-caret-down" />
-          </div>
-        );
-        inputs.push(
-          <div key={1} className="to input-date">
-            {this.state.to ? this.makeDateString(this.state.to) : 'Дата выезда'}
-            <i className="fas fa-caret-down" />
-          </div>
-        );
-      } else {
-        inputs.push(
-          <div key={0} className="from input-date">
-            {this.state.from ? this.makeDateString(this.state.from) : 'Дата заезда'}
-            <i className="fas fa-caret-down" />
-          </div>
-        );
-        inputs.push(
-          <div
-            key={1}
-            className="to input-date clickable turned"
-            onClick={this.showCalendar}
-          >
-            {this.state.to ? this.state.to : 'Дата выезда'}
-            <i className="fas fa-caret-down" />
-          </div>
-        );
-      }
-    } 
-
     return (
       <div className="content-flex-wrapper">
         <div className="book-room">
@@ -205,8 +211,12 @@ export default class BookRoom extends React.Component {
             Забронировать
           </h2>
           <form className="flex-book-form">
-            {inputs}
-            {calendar}
+            <ChooseDate
+              bookings={this.bookings}
+              from={this.props.from}
+              to={this.props.to}
+              setData={this.getData}
+            />
             {submitButton}
           </form>
         </div>

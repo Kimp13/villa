@@ -1,90 +1,199 @@
-import React from "react";
+import React, { useState } from "react";
 
 import Loader from "./Loader";
+import ChooseDate from "./ChooseDate";
 
 import { shortenTextTo } from "../libraries/texts.js";
 import { getApiResponse, postApi } from "../libraries/requests.js";
 
 import "../public/styles/components/conversation.module.scss";
 
-class RejectConfirmation extends React.Component {
-  constructor(props) {
-    super(props);
+function RejectConfirmation(props) {
+  function makeDateString(date) {
+    return `${date.day}.${date.month}.${date.year}`;
   }
 
-  render() {
-    let styleObject;
+  if (props.data) {
+    let dateFrom = new Date();
+    dateFrom.setTime(dateFrom.getTime() - 2160000000);
+    let dateTo = new Date(dateFrom.getTime() + 17280000000);
 
-    if (this.props.shown) {
-      styleObject = {};
-    } else {
-      styleObject = {display: 'none'};
-    }
+    dateFrom = {
+      day: dateFrom.getDate(),
+      month: dateFrom.getMonth() + 1,
+      year: dateFrom.getFullYear()
+    };
+    dateTo = {
+      day: dateTo.getDate(),
+      month: dateTo.getMonth() + 1,
+      year: dateTo.getFullYear()
+    };
+
+    let [state, setState] = useState({
+          phase: 0,
+          from: null,
+          to: null
+        }),
+        phaseContents = [
+          (
+            <React.Fragment>
+              <p className="confirmation-content-label">
+                Вы действительно хотите закрыть бронирование?
+              </p>
+              <button className="confirmation-content-button no" onClick={props.close}>
+                Нет
+              </button>
+              <button
+                className="confirmation-content-button yes"
+                onClick={() => {
+                  props.data.reject();
+                  setState({phase: 1});
+                }}
+              >
+                Да
+              </button>
+            </React.Fragment>
+          ),
+          (
+            <React.Fragment>
+              <p className="confirmation-content-label">
+                Создать бронирование, которое закрывает дату?
+              </p>
+              <button className="confirmation-content-button no" onClick={props.close}>
+                Нет
+              </button>
+              <button
+                className="confirmation-content-button maybe"
+                onClick={() => {
+                  setState({phase: 2})
+                }}
+              >
+                Ввести дату вручную
+              </button>
+              <button
+                className="confirmation-content-button yes"
+                onClick={() => {
+                  props.data.book();
+                  props.close();
+                }}
+              >
+                Да
+              </button>
+            </React.Fragment>
+          ),
+          (
+            <React.Fragment>
+              <p className="confirmation-content-label">
+                Введите дату:
+              </p>
+              <ChooseDate
+                bookings={new Array()}
+                from={dateFrom}
+                to={dateTo}
+                setData={(from, to) => {
+                  setState({
+                    from,
+                    to,
+                    phase: state.phase
+                  });
+                }}
+              />
+              <button
+                className="confirmation-content-button no"
+                onClick={() => {
+                  setState({phase: 1})
+                }}
+              >
+                Назад
+              </button>
+              {state.from && state.to ?
+                <button
+                  className="confirmation-content-button yes"
+                  onClick={() => {
+                    props.data.book(
+                      makeDateString(state.from),
+                      makeDateString(state.to)
+                    );
+                  }}
+                >
+                  Создать
+                </button> :
+                null}
+            </React.Fragment>
+          )
+        ];
+
 
     return (
-      <div
-        className="confirmation-wrapper"
-        style={{
-          display: this.props.shown ?
-                   'block' :
-                   'none'
-        }}
-      >
+      <div className="confirmation-wrapper">
         <div className="confirmation">
-          You really want to reject it? Have you thought twice?
+          <button className="confirmation-close" onClick={props.close}>
+            <i className="fas fa-times" />
+          </button>
+          <div className="confirmation-content">
+            {phaseContents[state.phase]}
+          </div>
         </div>
       </div>
     );
   }
+
+  return null;
 }
 
 export default class Conversation extends React.Component {
   constructor(props) {
     super(props);
 
-    let update = () => {
-          if (this.state.opened && !this.state.rejectConfirmation) {
-            if (!this.state.loading && this.state.count > 0) {
-              let messages = 
-                    document.getElementsByClassName('conversation-content-message'),
-                  element;
-              
-              if (this.state.skip > this.state.count) {
-                element = messages[(this.state.count - 1) % 50];
-              } else {
-                element = messages[49];
-              }
-
-              element.scrollIntoView();
-            }
+    this.updateAtScroll = () => {
+      if (this.state.opened) {
+        if (!this.state.loading && this.state.count > 0) {
+          let messages = 
+                document.getElementsByClassName('conversation-content-message'),
+              element;
+          
+          if (this.state.skip > this.state.count) {
+            element = messages[(this.state.count - 1) % 50];
           } else {
-            let elements = 
-                  document.getElementsByClassName('conversation-content-message'),
-                length = elements.length;
-
-            for (let i = 0; i < length; i += 1) {
-              elements[0].remove();
-            }
-
-            elements = document.getElementsByClassName('conversation-content-author');
-            length = elements.length;
-
-            for (let i = 0; i < length; i += 1) {
-              elements[0].remove();
-            }
+            element = messages[49];
           }
-        };
+
+          element.scrollIntoView();
+        }
+      }
+    };
+
+    this.updateAtNewMessage = () => {
+      let element = document.getElementsByClassName('conversation-content')[0];
+
+      if (element.scrollHeight - element.scrollTop - element.clientHeight <= 50) {
+        element.lastElementChild.scrollIntoView();
+      }
+    };
+
+    this.componentDidUpdate = () => {
+      if (this.state.opened) {
+        document.getElementsByClassName('conversation-content')[0]
+          .lastElementChild
+          .scrollIntoView();
+      }
+    };
 
     this.props.socket.on('newMessage', data => {
       if (data.conversationId === props.data.id) {
         this.setState((state, props) => {
+          this.componentDidUpdate = this.updateAtNewMessage;
+          state.skip += 1;
+          state.count += 1;
+          state.lastMessage.authorId = data.authorId;
+          state.lastMessage.created_at = data.created_at;
+          state.lastMessage.text = data.text;
+          state.lastMessage.type = data.type;
           if (state.opened) {
             this.pushMessages([data], state, props);
           } else {
             state.newMessages.push(data);
           }
-          console.log(data);
-          state.lastMessage = data;
           return state;
         });
       }
@@ -114,14 +223,7 @@ export default class Conversation extends React.Component {
       if (count > 0) {
         if (count <= 50) {
           this.state.scrollDisabled = true;
-          if (count === 0) {
-            this.state.messages = [
-
-            ];
-          }
         }
-
-        this.componentDidUpdate = update;
 
         this.state.count = count;
         this.addMessages();
@@ -155,12 +257,9 @@ export default class Conversation extends React.Component {
       conversationId: this.props.data.id
     })
       .then(data => {
-        if (data) {
-          data = data.reverse();
-        }
 
         this.setState((state, props) => {
-          this.pushMessages(data, state, props);
+          this.unshiftMessages(data, state, props);
 
           state.skip += 50;
 
@@ -178,6 +277,7 @@ export default class Conversation extends React.Component {
     this.setState((state, props) => {
       if (state.opened) {
         state.opened = false;
+        state.messages[this.findByKey("null")] = null;
       } else {
         state.opened = true;
       }
@@ -190,7 +290,10 @@ export default class Conversation extends React.Component {
     if (!this.state.loading) {
       if (event) element = event.target;
 
-      if (element.scrollTop < 50) this.addMessages();
+      if (element.scrollTop < 50) {
+        this.componentDidUpdate = this.updateAtScroll;
+        this.addMessages();
+      }
     }
   }
 
@@ -240,6 +343,17 @@ export default class Conversation extends React.Component {
     e.target.style.height = `${this.getNumberOfLines(e.target.value) * 1.5}rem`;
   }
 
+  findByKey(key) {
+    key = String(key);
+    for (let i = 0; i < this.state.messages.length; i += 1) {
+      if (this.state.messages[i]) {
+        if (this.state.messages[i].key === key) {
+          return i;
+        }
+      }
+    }
+  }
+
   createBooking(messageId, accepted, parts) {
     postApi('/villa-user-management/createBooking', {
       ...this.props.auth,
@@ -251,21 +365,39 @@ export default class Conversation extends React.Component {
     });
   }
 
-  closeBooking(index, data, parts) {
-    //this.createBooking(message.id, false, parts);
-
+  closeBooking(key, data, parts) {
     this.setState((state, props) => {
-      data.text += '_rejected';
-      state.messages[index] = this.createMessage(data, state.messages[index].key);
+      state.rejectConfirmation = {
+        book: (from = parts[1], to = parts[2]) => {
+          this.createBooking(data.id, false, [parts[0], from, to]);
+          this.setState((state, props) => {
+            state.rejectConfirmation = false;
+            return state;
+          });
+        },
+        reject: () => {
+          let index = this.findByKey(key);
+
+          data.text += '_rejected';
+
+          if (index) {
+            this.setState((state, props) => {
+              state.messages[index] = this.createMessage(data, key);
+              return state;
+            });
+          }
+        }
+      };
       return state;
     });
   }
 
-  acceptBooking(index, data, parts) {
-    //this.createBooking(message.id, true, parts);
+  acceptBooking(key, data, parts) {
+    this.createBooking(data.id, true, parts);
+
     this.setState((state, props) => {
       data.text += '_accepted';
-      state.messages[index] = this.createMessage(data, state.messages[index].key);
+      state.messages[this.findByKey(key)] = this.createMessage(data, key);
       return state;
     });
   }
@@ -274,16 +406,21 @@ export default class Conversation extends React.Component {
     if (data.type === 'booking') {
       let parts = data.text.split('_'),
           footer = null,
+          length = this.state.messages.length,
           newText,
           elementClassName,
           paragraphText;
 
-      if (this.rooms[parts[0]]) {
-        paragraphText = this.rooms[parts[0]];
+      if (this.props.rooms[parts[0]]) {
+        paragraphText = `Номер: ${this.props.rooms[parts[0]]}`;
       } else {
         paragraphText = 'Загрузка номера...';
         getApiResponse(`/rooms/${parts[0]}`).then(room => {
-          this.rooms[parts[0]] = room.name;
+          this.setState((state, props) => {
+            props.assignRoom(parts[0], room.name);
+            state.messages[this.findByKey(key)] = this.createMessage(data, key);
+            return state;
+          });
         }, e => {
           console.log(e);
         });
@@ -299,19 +436,18 @@ export default class Conversation extends React.Component {
         newText = `Заявка на бронирование`;
         elementClassName = 'pending';
         if (this.props.socket.user.isRoot) {
-          let length = this.state.messages.length;
           footer = (
             <div className="conversation-content-message-footer">
               <button
                 onClick={
-                  () => this.closeBooking(length, data, parts)
+                  () => this.closeBooking(key, data, parts)
                 }
               >
                 Закрыть
               </button>
               <button
                 onClick={
-                  () => this.acceptBooking(length, data, parts)
+                  () => this.acceptBooking(key, data, parts)
                 }
               >
                 Принять
@@ -357,15 +493,58 @@ export default class Conversation extends React.Component {
     }
   }
 
-  pushMessages(messages, state, props) {
-    for (let i = 0; i < messages.length; i += 1) {
-      let key = state.skip + i;
+  unshiftMessages(messages, state, props) {
+    let authorId,
+        length = state.messages.unshift(
+          this.createMessage(messages[0], state.messages.length)
+        );
 
-      if (key === 0 ||
-          state.messages[state.messages.length - 1].props['data-author-id'] !==
-          messages[i].authorId) {
+    for (let i = 1; i < messages.length; i += 1) {
+      authorId = state.messages[0].props['data-author-id'];
+      if (authorId !== messages[i].authorId) {
+        state.messages.unshift(
+          <p className="conversation-content-author" key={'a' + length}>
+            {authorId === props.socket.user.id ?
+              'Вы' :
+              props.data.participants[authorId].name}
+          </p>
+        );
+      }
+
+      length = state.messages.unshift(this.createMessage(messages[i], length));
+    }
+
+    authorId = state.messages[0].props['data-author-id'];
+    state.messages.unshift(
+      <p className="conversation-content-author" key={'a' + length}>
+        {authorId === props.socket.user.id ?
+          'Вы' :
+          props.data.participants[authorId].name}
+      </p>
+    );
+  }
+
+  pushMessages(messages, state, props) {
+    let length = state.messages.length, i = 0;
+
+    if (length === 0) {
+      state.messages.push(
+        <p className="conversation-content-author" key={'a' + length}>
+          {messages[0].authorId === props.socket.user.id ?
+            'Вы' :
+            props.data.participants[messages[0].authorId].name}
+        </p>
+      );
+
+      length = state.messages.push(this.createMessage(messages[0], length));
+      i += 1;
+    }
+
+
+    for (i; i < messages.length; i += 1) {
+      if (state.messages[length - 1].props['data-author-id'] !== messages[i].authorId) {
         state.messages.push(
-          <p className="conversation-content-author" key={'a' + key}>
+          <p className="conversation-content-author" key={'a' + length}>
             {messages[i].authorId === props.socket.user.id ?
               'Вы' :
               props.data.participants[messages[i].authorId].name}
@@ -373,7 +552,7 @@ export default class Conversation extends React.Component {
         );
       }
 
-      state.messages.push(this.createMessage(messages[i], key));
+      length = state.messages.push(this.createMessage(messages[i], length));
     }
   }
 
@@ -403,7 +582,7 @@ export default class Conversation extends React.Component {
     if (this.state.opened) {
       if (this.state.newMessages.length > 0) {
         this.state.messages.push(
-          <p className="conversation-content-null">
+          <p className="conversation-content-null" key="null">
             Новые сообщения
           </p>
         );
@@ -440,7 +619,11 @@ export default class Conversation extends React.Component {
             </button>
           </form>
           <RejectConfirmation
-            shown={this.state.rejectConfirmation}
+            data={this.state.rejectConfirmation}
+            close={() => this.setState((state, props) => {
+              state.rejectConfirmation = false;
+              return state;
+            })}
           />
         </div>
       );
@@ -465,10 +648,10 @@ export default class Conversation extends React.Component {
               text,
               elementClassName;
 
-          if (parts[2] === 'rejected') {
+          if (parts[3] === 'rejected') {
             text = `Закрытое бронирование с ${parts[1]} по ${parts[2]}`;
             elementClassName = 'rejected';
-          } else if (parts[2] === 'accepted') {
+          } else if (parts[3] === 'accepted') {
             text = `Принятое бронирование с ${parts[1]} по ${parts[2]}`;
             elementClassName = 'accepted';
           } else {
@@ -502,7 +685,7 @@ export default class Conversation extends React.Component {
                               {this.state.newMessages.length}
                              </div>
       }
-        
+
       return (
         <div className={"conversation"} onClick={this.toggle}>
           <h3 className="conversation-header">

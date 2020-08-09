@@ -19,27 +19,6 @@
       margin: .5rem;
     }
 
-    .input-date {
-      .fa-caret-up, .fa-caret-down {
-        position: relative;
-        top: .125rem;
-        margin: 0 0 0 .3rem;
-        font-size: 1.25rem;
-        transition: transform .3s ease;
-      }
-
-      &.clickable {
-        &:hover {
-          cursor: pointer;
-        }
-      }
-
-      &.turned {
-        .fa-caret-down {
-          transform: rotateZ(180deg);
-        }
-      }
-    }
     .date-submit {
       font-size: 1rem;
       font-family: inherit;

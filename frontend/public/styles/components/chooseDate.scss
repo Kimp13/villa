@@ -1,0 +1,28 @@
+@import "../foundation/variables";
+
+.input-date {
+  border: .2rem solid $lapis;
+  border-radius: 1rem;
+  padding: 0 .5rem;
+  margin: .5rem;
+
+  .fa-caret-up, .fa-caret-down {
+    position: relative;
+    top: .125rem;
+    margin: 0 0 0 .3rem;
+    font-size: 1.25rem;
+    transition: transform .3s ease;
+  }
+
+  &.clickable {
+    &:hover {
+      cursor: pointer;
+    }
+  }
+
+  &.turned {
+    .fa-caret-down {
+      transform: rotateZ(180deg);
+    }
+  }
+}

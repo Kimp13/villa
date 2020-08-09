@@ -31,8 +31,8 @@ class Messages extends React.Component {
     }
 
     this.newMessageHandler = data => {
-      for (let i = 0; i < this.state.conversations.length; i += 1) { 
-        return;
+      for (let i = 0; i < this.state.conversations.length; i += 1) {
+        if (this.state.conversations[i].data.id === data.conversationId) return;
       }
 
       getApiResponse('/villa-user-management/getConversations', {
@@ -40,16 +40,21 @@ class Messages extends React.Component {
         id: data.conversationId
       })
         .then(conversation => {
-          this.state.skip += 1;
+          this.setState((state, props) => {
+            state.skip += 1;
+            state.count += 1;
+            state.conversations.unshift({
+              data: conversation[0],
+              key: state.count,
+              newMessages: new Array(data)
+            });
 
-          this.state.conversations.unshift({
-            data: conversation[0],
-            key: this.state.count,
-            newMessages: new Array(data)
+            return state;
           });
-
-          this.state.count += 1;
-          this.setState(this.state);
+          
+        }, e => {
+          console.log(e);
+          alert('Ошибка загрузки нового разговора.');
         });
     };
 
@@ -57,11 +62,13 @@ class Messages extends React.Component {
 
     this.state = {
       conversations: new Array(),
+      rooms: new Object(),
       loading: true,
       skip: 0
     }
 
     this.checkScroll = this.checkScroll.bind(this);
+    this.assignRoom = this.assignRoom.bind(this);
 
     getApiResponse("/villa-user-management/getConversationsCount", this.auth)
       .then(count => {
@@ -127,6 +134,13 @@ class Messages extends React.Component {
       }, e => console.log(e));
   }
 
+  assignRoom(key, value) {
+    this.setState((state, props) => {
+      state.rooms[key] = value;
+      return state;
+    });
+  }
+
   render() {
     let conversations;
     
@@ -143,6 +157,8 @@ class Messages extends React.Component {
             newMessages={this.state.conversations[i].newMessages}
             data={this.state.conversations[i].data}
             key={this.state.conversations[i].key}
+            rooms={this.state.rooms}
+            assignRoom={this.assignRoom}
           />
         );
       }
