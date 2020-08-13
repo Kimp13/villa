@@ -1,13 +1,37 @@
 import { getApiResponse } from "../../libraries/requests";
+import { dateSmaller } from "../../libraries/dates";
 
-import SimpleDate from "../../classes/SimpleDate";
 import Head from "next/head";
 import IntroductionDiv from "../../components/IntroductionDiv";
 import BookRoom from "../../components/BookRoom";
+import Admin from "../../components/AdminRoomPanel";
 
 import "../../public/styles/pages/room/index.module.scss";
 
 export async function getServerSideProps({ params }) {
+  function mergeBookings(bookings) {
+    const length = bookings.length;
+    let i = 0, result = new Array();
+
+    for (i; i < length; i += 1) {
+      let itemToPush = bookings[i];
+
+      while (i + 1 < length &&
+        dateSmaller(bookings[i + 1].from, itemToPush.to, false)) {
+        i += 1;
+        if (dateSmaller(itemToPush.to, bookings[i].to)) {
+          itemToPush.to.year = bookings[i].to.year;
+          itemToPush.to.month = bookings[i].to.month;
+          itemToPush.to.day = bookings[i].to.day;
+        }
+      }
+
+      result.push(itemToPush);
+    }
+
+    return result;
+  }
+
   let room = (await getApiResponse('/rooms', {name: params.name}))[0],
       serverTime = await getApiResponse('/getTime');
 
@@ -36,7 +60,7 @@ export async function getServerSideProps({ params }) {
       props: {
         room: room,
         serverTime: serverTime.time,
-        bookings: bookings,
+        bookings: mergeBookings(bookings),
         title: room.name,
         footerEnabled: true
       }
@@ -53,7 +77,7 @@ export async function getServerSideProps({ params }) {
 
 export default ({ room, serverTime, bookings, socket }) => {
   if (room) {
-    let todate = new Date(),
+    let todate = new Date(serverTime),
         from = {
           day: todate.getDate(),
           month: todate.getMonth() + 1,
@@ -77,14 +101,24 @@ export default ({ room, serverTime, bookings, socket }) => {
           </title>
         </Head>
         <IntroductionDiv content={room} />
-        <BookRoom
-          user={socket.user}
-          bookings={bookings}
-          priceInfo={room.priceInfo}
-          roomId={room.id}
-          from={from}
-          to={to}
-        />
+        { 
+          socket.user.isRoot ?
+          <Admin
+            user={socket.user}
+            bookings={bookings}
+            priceInfo={room.priceInfo}
+            roomId={room.id}
+            from={from}
+          /> :
+          <BookRoom
+            user={socket.user}
+            bookings={bookings}
+            priceInfo={room.priceInfo}
+            roomId={room.id}
+            from={from}
+            to={to}
+          />
+        }
       </>
     );
   }

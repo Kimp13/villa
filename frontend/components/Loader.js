@@ -9,12 +9,12 @@ export default class Loader extends React.Component {
 
   render() {
     let items = [],
-        animationDuration = `${this.props.animationDuration / 1000}s`;
+        animationDuration = `${(this.props.animationDuration || 2000) / 1000}s`;
 
-    for (let i = 0; i < this.props.itemsCount; i += 1) {
+    for (let i = 0; i < (this.props.itemsCount || 4); i += 1) {
       items.push(
         <div className="loader-item" key={i} style={{
-          animationDelay: `${i * this.props.animationDelay / 1000}s`,
+          animationDelay: `${i * (this.props.animationDelay || 100) / 1000}s`,
           animationDuration: animationDuration
         }} />
       );

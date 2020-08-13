@@ -1,6 +1,10 @@
 import React from "react";
 
-import { incrementDate, getDaysAmountInMonthOfYear } from "../libraries/dates";
+import {
+  incrementDate,
+  getDaysAmountInMonthOfYear,
+  dateSmaller
+} from "../libraries/dates";
 
 import "../public/styles/components/calendar.module.scss";
 
@@ -57,31 +61,32 @@ export default class Calendar extends React.Component {
   }
 
   returnThisMonthBookings(bookings, month, year, from, to) {
+    if (0 === bookings.length) return [];
+
     let result = [],
         i = 0;
-    if (i === bookings.length) return [];
-    while (bookings[i].to.year < year) {
-      i += 1;
-      if (i === bookings.length) return [];
+
+    from = {
+      year: this.state.currentYear,
+      month: this.state.currentMonth,
+      day: from
+    };
+
+    to = {
+      year: this.state.currentYear,
+      month: this.state.currentMonth,
+      day: to
+    };
+
+    while(dateSmaller(bookings[i].to, from)) {
+      if (++i === bookings.length) return [];
     }
-    while (bookings[i].to.month < month) {
-      i += 1;
-      if (i === bookings.length) return [];
-    }
-    if (bookings[i].from.month > month || (bookings[i].from.month === month && bookings[i].from.day > to)) return [];
-    while (bookings[i].to.month === month && bookings[i].to.day <= from) {
-      i += 1;
-      if (i === bookings.length) return [];
-    }
-    if (bookings[i].from.month > month) return [];
-    result.push(bookings[i]);
-    i += 1;
-    if (i === bookings.length) return result;
-    while (bookings[i].from.month === month && bookings[i].from.day <= to) {
+
+    while (dateSmaller(bookings[i].from, to, false)) {
       result.push(bookings[i]);
-      i += 1;
-      if (i === bookings.length) return result;
+      if (++i === bookings.length) return result;
     }
+
     return result;
   }
 
@@ -280,6 +285,35 @@ export default class Calendar extends React.Component {
     }
   }
 
+  isDayAvailable(bookings, day) {
+    if (bookings.length > 0) {
+      let i = 0;
+      if (bookings[i].from.month !== this.state.currentMonth) {
+        if (bookings[i].to.month !== this.state.currentMonth || day < bookings[i].to.day) {
+          return false;
+        }
+
+        i += 1;
+      }
+
+      for (i; i < bookings.length - 1; i += 1) {
+        if (bookings[i].from.day <= day && bookings[i].to.day > day) {
+          return false;
+        }
+      }
+
+      if (i < bookings.length) {
+        if (bookings[i].to.month !== this.state.currentMonth) {
+          return !(bookings[i].from.day <= day);
+        }
+
+        return !(bookings[i].from.day <= day && bookings[i].to.day > day);
+      }
+    }
+
+    return true;
+  }
+
   render() {
     let from, to, currentMonth, currentYear, style, bookingEndMode = false;
     if (this.props.show) {
@@ -299,20 +333,56 @@ export default class Calendar extends React.Component {
         to = this.state.to;
       }
 
-      let targetParams = this.props.target.getBoundingClientRect();
+      let ratio = window.innerWidth / window.innerHeight;
 
-      targetParams = {
-        top: targetParams.top + 
-          (window.pageYOffset || document.documentElement.scrollTop),
-        left: targetParams.left + 
-          (window.pageXOffset || document.documentElement.scrollLeft)
+      if (ratio > 1 && ratio < 2.33) {
+        let targetParams = this.props.target.getBoundingClientRect(),
+            rem = window.innerWidth / 100 + window.innerHeight / 100,
+            top,
+            left,
+            translateX,
+            translateY;
+
+        targetParams = {
+          top: targetParams.top + 
+            (window.pageYOffset || document.documentElement.scrollTop),
+          bottom: targetParams.bottom +
+            (window.pageYOffset || document.documentElement.scrollTop),
+          left: targetParams.left +
+            (window.pageYOffset || document.documentElement.scrollLeft),
+          right: targetParams.right + 
+            (window.pageXOffset || document.documentElement.scrollLeft)
+        }
+
+        if (targetParams.right < 14 * rem) {
+          left = targetParams.left;
+          translateX = '0';
+        } else {
+          left = targetParams.right;
+          translateX = '-100%';
+        }
+
+        if (targetParams.top < 14 * rem) {
+          top = targetParams.bottom;
+          translateY = '1rem';
+        } else {
+          top = targetParams.top - rem;
+          translateY = '-100%';
+        }
+
+        style = {
+          display: '',
+          transform: `translate(${translateX}, ${translateY})`,
+          top,
+          left
+        }
+      } else {
+        style = {
+          display: ''
+        }
       }
 
-      style = {
-        display: '',
-        top: targetParams.top,
-        left: targetParams.left
-      }
+      
     } else {
       style = {
         display: 'none'
@@ -335,7 +405,7 @@ export default class Calendar extends React.Component {
           'ВС'
         ],
         dayBricks = [],
-        weekDayOfMonth = ((new Date(`${this.state.currentYear}-${this.state.currentMonth + 1}-1`).getDay()) + 6) % 7,
+        weekDayOfMonth = ((new Date(this.state.currentYear, this.state.currentMonth - 1, 1).getDay()) + 6) % 7,
         lastMonthDayCount = getDaysAmountInMonthOfYear(this.state.currentMonth === 1 ? 12 : this.state.currentMonth - 1, this.state.currentYear),
         thisMonthDayCount = getDaysAmountInMonthOfYear(this.state.currentMonth, this.state.currentYear),
         firstMonth = (this.state.currentMonth === from.month && this.state.currentYear === from.year),
@@ -352,12 +422,39 @@ export default class Calendar extends React.Component {
         controlPanelHeader,
         i;
     if (bookingEndMode) {
-      bookings = bookings.map(booking => {
-        return {
-          from: incrementDate(booking.from, getDaysAmountInMonthOfYear(booking.from.month, booking.from.year)),
-          to: incrementDate(booking.to, getDaysAmountInMonthOfYear(booking.to.month, booking.to.year))
-        }
-      });
+      if (bookings.length > 0) {
+        bookings[0].from = incrementDate(
+          bookings[0].from,
+          getDaysAmountInMonthOfYear(bookings[0].from.month, bookings[0].from.year)
+        );
+        bookings[0].to = incrementDate(
+          bookings[0].to,
+          getDaysAmountInMonthOfYear(bookings[0].to.month, bookings[0].to.year)
+        );
+      }
+
+      let i = 1;
+
+      for (i; i < bookings.length - 1; i += 1) {
+        bookings[i].from = incrementDate(
+          bookings[i].from,
+          thisMonthDayCount
+        );
+        bookings[i].to = incrementDate(
+          bookings[i].to,
+          thisMonthDayCount
+        );
+      }
+      if (i < bookings.length) {
+        bookings[i].from = incrementDate(
+          bookings[i].from,
+          thisMonthDayCount
+        );
+        bookings[i].to = incrementDate(
+          bookings[i].to,
+          getDaysAmountInMonthOfYear(bookings[i].to.month, bookings[i].to.year)
+        );
+      }
     }
     if (from.year === to.year) {
       controlPanelHeader = <p>{this.state.currentYear}</p>;
@@ -411,7 +508,13 @@ export default class Calendar extends React.Component {
           lastDay);
           i += 1) {
           dayBricks.push(
-            <div key={i} className="day-brick available" onClick={this.chooseSecondDay} onMouseEnter={this.highlightChoices} onMouseLeave={this.unhighlightChoices}>
+            <div
+              key={i}
+              className="day-brick available"
+              onClick={this.chooseSecondDay}
+              onMouseEnter={this.highlightChoices}
+              onMouseLeave={this.unhighlightChoices}
+            >
               {i + 1}
             </div>
           );
@@ -462,32 +565,24 @@ export default class Calendar extends React.Component {
         }
       }
     } else {
-      while (bookings.length > 0) {
-        if (bookings[0].from.month === this.state.currentMonth) {
-          for (i; i < bookings[0].from.day - 1; i += 1) {
-            dayBricks.push(
-              <div key={i} className="day-brick available" onClick={this.chooseSecondDay}>
-                {i + 1}
-              </div> 
-            );
-          }
-        }
-        let limit = (bookings[0].to.month !== this.state.currentMonth || bookings[0].to.day > lastDay) ? lastDay : bookings[0].to.day - 1;
-        for (i; i < limit; i += 1) {
+      for (i = firstDay - 1; i < lastDay; i += 1) {
+        if (this.isDayAvailable(bookings, i + 1)) {
+          dayBricks.push(
+            <div
+              key={i}
+              className="day-brick available"
+              onClick={this.chooseSecondDay}
+            >
+              {i + 1}
+            </div> 
+          );
+        } else {
           dayBricks.push(
             <div key={i} className="day-brick booked">
               {i + 1}
             </div> 
           );
         }
-        bookings.shift();
-      }
-      for (i; i < lastDay; i += 1) {
-        dayBricks.push(
-          <div key={i} className="day-brick available" onClick={this.chooseSecondDay}>
-            {i + 1}
-          </div> 
-        );
       }
       for (i; i < thisMonthDayCount; i += 1) {
         dayBricks.push(

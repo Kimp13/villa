@@ -1,6 +1,4 @@
-import "../public/styles/libraries/forms.module.scss";
-
-export function showError(form, fieldIndex, description) {
+export function showError(form, fieldIndex, description, changeParentHeight = false) {
   let i = 0,
       field = form[fieldIndex];
       
@@ -18,13 +16,23 @@ export function showError(form, fieldIndex, description) {
   error.classList.add('form-error');
   error.innerHTML = description;
 
-  error.onclick = function() {
-    field.focus();
-  };
+  if (field !== undefined) {
+    error.onclick = function() {
+      field.focus();
+    };
 
-  field.oninput = function() {
-    error.remove();
-    field.oninput = null;
+    field.oninput = function() {
+      error.remove();
+      if (form.childElementCount === form.length) {
+        form[form.length - 1].style.display = '';
+      }
+      field.oninput = null;
+      if (changeParentHeight) {
+        window.requestAnimationFrame(() => {
+          form.parentNode.style.height = form.offsetHeight + 'px';
+        });
+      }
+    }
   }
 
   form.prepend(error);

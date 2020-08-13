@@ -31,7 +31,11 @@ export function getCookie(cookie, cookieString) {
   return null;
 }
 
-export function setCookie(cookie, value, { maxAge, expires, path, httpOnly, sameSite } = {}) {
+export function setCookie(
+  cookie,
+  value,
+  { maxAge, expires, path, httpOnly, sameSite } = {}
+) {
   let finalCookie;
 
   if (hasCookie(cookie)) {

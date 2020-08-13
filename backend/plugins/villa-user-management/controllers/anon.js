@@ -29,12 +29,16 @@ module.exports = {
     name ? createQuery.name = name : null;
     surname ? createQuery.surname = surname : null;
 
-    const anon = await strapi.query('anonymoususer').create(createQuery);
+    const anon = await strapi.query('anonymoususer').create(createQuery),
+          role = await strapi.query('role', 'users-permissions').findOne({
+            type: 'root'
+          }),
+          rootId = String(role.users[0].id);
 
     const newConversation = await strapi.query('conversation').create({
       participants: [
         'anon' + anon.id,
-        '1'
+        rootId
       ]
     });
 
@@ -54,7 +58,7 @@ module.exports = {
         lastMessage: message.id
       });
 
-      strapi.io.to(strapi.io.userToSocketId['1']).emit('newMessage', query);
+      strapi.io.to(strapi.io.userToSocketId[rootId]).emit('newMessage', query);
     }
 
     ctx.send(JSON.stringify(anon));

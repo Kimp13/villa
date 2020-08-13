@@ -7,6 +7,7 @@ import {
   getDaysAmountInMonthOfYear,
   dateSmallerNonStrict
 } from "../libraries/dates";
+import { getDatePrices } from "../libraries/prices";
 
 import "../public/styles/components/bookRoom.scss";
 
@@ -19,60 +20,18 @@ export default class BookRoom extends React.Component {
       to: null,
     }
 
-    const length = this.props.bookings.length;
-    let i, result = new Array();
-
-    for (i = 0; i < length; i += 1) {
-      let itemToPush = this.props.bookings[i];
-
-      while (i + 1 < length &&
-        dateSmallerNonStrict(this.props.bookings[i], this.props.bookings[i + 1])) {
-        i += 1;
-        itemToPush.to.year = this.props.bookings[i].to.year;
-        itemToPush.to.month = this.props.bookings[i].to.month;
-        itemToPush.to.day = this.props.bookings[i].to.day;
-      }
-
-      result.push(itemToPush);
-    }
-
-    this.bookings = result;
-
     this.book = this.book.bind(this);
     this.getData = this.getData.bind(this);
   }
 
   countPrice(from, to) {
-    let getDatePrices = (day, month) => {
-      if ((dates[0].month > month) || (dates[0].month === month && dates[0].day >= day)) {
-        return this.props.priceInfo[dateStrings[dates.length - 1]].slice();
-      }
-
-      for (let i = 1; i < dates.length; i += 1) {
-        if ((dates[i].month > month) || (dates[i].month === month && dates[i].day > day)) {
-          return this.props.priceInfo[dateStrings[i - 1]].slice();
-        }
-      }
-
-      return this.props.priceInfo[dateStrings[dates.length - 1]].slice();
-    },
-        dates = new Array(),
-        dateStrings = Object.keys(this.props.priceInfo);
-
     if (this.props.priceInfo) {
       let previousMonth = from.month,
           previousMonthDayCount = getDaysAmountInMonthOfYear(from.month, from.year),
           prices,
           newPrices;
 
-      for (let i = 0; i < dateStrings.length; i += 1) {
-        dates.push({
-          day: parseInt(dateStrings[i].substring(0, 2)),
-          month: parseInt(dateStrings[i].substring(3))
-        });
-      }
-
-      prices = getDatePrices(from.day, from.month);
+      prices = getDatePrices(from, this.props.priceInfo);
       from = incrementDate(from, previousMonthDayCount);
 
       while (from.year < to.year) {
@@ -81,7 +40,7 @@ export default class BookRoom extends React.Component {
           previousMonthDayCount = getDaysAmountInMonthOfYear(from.month, from.year);
         }
 
-        newPrices = getDatePrices(from.day, from.month);
+        newPrices = getDatePrices(from, this.props.priceInfo);
 
         for (let i = 0; i < prices.length; i += 1) {
           prices[i] += newPrices[i];
@@ -95,7 +54,7 @@ export default class BookRoom extends React.Component {
           previousMonthDayCount = getDaysAmountInMonthOfYear(from.month, from.year);
         }
 
-        newPrices = getDatePrices(from.day, from.month);
+        newPrices = getDatePrices(from, this.props.priceInfo);
 
         for (let i = 0; i < prices.length; i += 1) {
           prices[i] += newPrices[i];
@@ -108,7 +67,7 @@ export default class BookRoom extends React.Component {
       previousMonthDayCount = getDaysAmountInMonthOfYear(from.month, from.year);
 
       while (from.day < to.day) {
-        newPrices = getDatePrices(from.day, from.month);
+        newPrices = getDatePrices(from, this.props.priceInfo);
 
         for (let i = 0; i < prices.length; i += 1) {
           prices[i] += newPrices[i];
@@ -189,8 +148,6 @@ export default class BookRoom extends React.Component {
   render() {
     let submitButton;
 
-    console.log(this.state);
-
     if (this.state.from && this.state.to) {
       submitButton = (
         <input
@@ -212,7 +169,7 @@ export default class BookRoom extends React.Component {
           </h2>
           <form className="flex-book-form">
             <ChooseDate
-              bookings={this.bookings}
+              bookings={this.props.bookings}
               from={this.props.from}
               to={this.props.to}
               setData={this.getData}

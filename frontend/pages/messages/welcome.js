@@ -4,6 +4,7 @@ import { showError } from "../../libraries/forms.js";
 import { setCookie } from "../../libraries/cookies.js";
 
 import "../../public/styles/pages/messages/welcome.module.scss";
+import "../../public/styles/libraries/forms.module.scss";
 
 export async function getStaticProps() {
   return {

@@ -1,6 +1,7 @@
 import IntroductionDiv from "../components/IntroductionDiv";
 import Rooms from "../components/Rooms";
 import News from "../components/News";
+import AnonymousAnnouncement from "../components/AnonymousAnnouncement";
 import { getApiResponse, getFullLink } from "../libraries/requests";
 
 export async function getStaticProps() {
@@ -32,13 +33,14 @@ export async function getStaticProps() {
   }
 }
 
-export default function({ main }) {
+export default function({ main, socket }) {
   return (
     <main>
       <IntroductionDiv content={main}/>
+      <AnonymousAnnouncement user={socket.user} />
       <div className="content-flex-wrapper">
-        <Rooms/>
-        <News/>
+        <Rooms isAdmin={socket.user.isRoot} />
+        <News isAdmin={socket.user.isRoot} />
       </div>
       <div className="content-flex-wrapper">
         <div className="yandex-map">

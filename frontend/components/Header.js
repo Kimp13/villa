@@ -66,7 +66,7 @@ export default class Header extends React.Component {
       firstLinks.push(
         <Link href="/auth?type=signin" as="/auth" key={'a'}>
           <a className="underlined" onClick={this.handleButtonClick}>
-            <i className="fas fa-user-check" />Вход
+            <i className="fas fa-user-check" />Вход / Регистрация
           </a>
         </Link>
       );

@@ -63,6 +63,14 @@
       "config": {
         "policies": []
       }
+    },
+    {
+      "method": "POST",
+      "path": "/signUp",
+      "handler": "register.create",
+      "config": {
+        "policies": []
+      }
     }
   ]
 }

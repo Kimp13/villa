@@ -9,7 +9,6 @@ button {
   background: white;
   box-shadow: 0 0 .15rem $lapis;
   border-radius: 1rem;
-  transform: translate(-100%, calc(-100% - 1rem));
   transition: box-shadow .3s ease;
   &:hover {
     box-shadow: 0 0 .5rem $lapis;

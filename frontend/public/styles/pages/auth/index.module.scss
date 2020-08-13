@@ -26,40 +26,78 @@ body {
     justify-content: center;
     align-items: center;
     height: 2rem;
+    font-size: 1rem;
     color: $lapis;
+    transition: height .3s ease, font-size .3s ease;
+
     &:not(.active):hover {
       cursor: pointer;
     }
+
+    &.hidden {
+      height: 0;
+      font-size: 0;
+    }
   }
+
   .form-switcher-underline {
     width: 50%;
     height: .2rem;
     background: $lapis;
-    transition: transform .4s ease;
+    transition: transform .4s ease, height .3s ease;
+
     &.right {
       transform: translateX(100%);
     }
+
+    &.hidden {
+      height: 0;
+    }
   }
   &-main {
-    width: 200%;
-    transition: transform .4s ease;
+    width: 100%;
+    position: relative;
+    transition: height .3s ease;
     font-size: 0;
-    &.right {
-      transform: translateX(-50%);
-    }
     & > * {
       font-size: 1rem;
     }
     form {
-      display: inline-block;
-      width: 50%;
+      position: absolute;
+      display: block;
+      width: 100%;
       text-align: right;
       padding: .5rem 5%;
+      transition: transform .3s ease;
+
+      &.right {
+        transform: translateX(100%);
+      }
+
+      &.left {
+        transform: translateX(-100%);
+      }
 
       input, label {
         font-family: pangolin;
         font-size: 1rem;
         color: $lapis;
+      }
+
+      button {
+        display: block;
+        text-align: left;
+        color: gray;
+        font-size: 1.25rem;
+
+        svg {
+          width: 1.25rem;
+          height: 1.25rem;
+        }
+
+        &:hover {
+          cursor: pointer;
+        }
       }
 
       .keyboard-input {

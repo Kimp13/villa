@@ -1,5 +1,6 @@
 import React from "react";
 import Loader from "../../components/Loader.js";
+import AnonymousAnnouncement from "../../components/AnonymousAnnouncement.js";
 import Conversation from "../../components/Conversation.js";
 
 import { getApiResponse } from "../../libraries/requests";
@@ -169,6 +170,7 @@ class Messages extends React.Component {
         <div className="conversations-header">
           Сообщения
         </div>
+        <AnonymousAnnouncement user={this.props.socket.user} />
         <div className="conversations-content" onScroll={this.checkScroll}>
           {conversations}
           {

@@ -6,6 +6,11 @@
   display: flex;
   justify-content: center;
   align-items: center;
+
+  &:only-child {
+    height: 100%;
+  }
+
   &-item {
     background: $lapis;
     margin: .25rem;

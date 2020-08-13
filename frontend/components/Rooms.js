@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import BackgroundWithSwitchers from "../components/BackgroundWithSwitchers.js";
+import BackgroundWithSwitchers from "./BackgroundWithSwitchers";
+import Loader from "./Loader";
 
 import { getApiResponse } from "../libraries/requests";
 import { shortenTextTo } from "../libraries/texts";
@@ -11,7 +12,10 @@ class Room extends React.Component {
   constructor(props) {
     super(props);
 
-    this.description = shortenTextTo(this.props.description, 100);
+    this.description = 
+      this.props.description ?
+        shortenTextTo(this.props.description, 100) :
+        "Описания нет";
   }
 
   render() {
@@ -28,7 +32,11 @@ class Room extends React.Component {
         </p>
         <Link href={'/room/[name]'} as={`/room/${this.props.name}`} >
           <a className="room-link">
-            Цены и бронирование
+            {
+              this.props.isAdmin ?
+                "Настройка" :
+                "Цены и бронирование"
+            }
           </a>
         </Link>
       </div>
@@ -36,9 +44,9 @@ class Room extends React.Component {
   }
 }
 
-export default function () {
+export default function ({ isAdmin }) {
   let roomElements = Array(),
-      [rooms, setRooms] = useState([]);
+      [rooms, setRooms] = useState('');
 
   useEffect(() => {
     getApiResponse('/rooms', {
@@ -66,14 +74,20 @@ export default function () {
   }, []);
 
   for (let i = 0; i < rooms.length; i += 1) {
-    roomElements.push(<Room {...rooms[i]} key={i} />);
+    roomElements.push(
+      <Room 
+        {...rooms[i]}
+        isAdmin={isAdmin}
+        key={i}
+      />
+    );
   }
 
   return (
     <>
       <div className="rooms-container">
         <h2>Номера</h2>
-        {roomElements}
+        {roomElements || <Loader />}
       </div>
     </>
   );
