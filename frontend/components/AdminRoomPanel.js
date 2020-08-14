@@ -10,6 +10,12 @@ import {
 import {
   getDatePrices
 } from "../libraries/prices";
+import {
+  getFullLink
+} from "../libraries/requests";
+import {
+  getCookie
+} from "../libraries/cookies";
 
 import "../public/styles/components/adminRoomPanel.scss";
 
@@ -50,8 +56,9 @@ export default class AdminRoomPanel extends React.Component {
       chosenTo: chosenFrom,
       currentMonth: props.from.month,
       currentYear: props.from.year,
-      prices: props.priceInfo,
-      multipleChoice: false
+      prices: Object.assign({}, props.priceInfo),
+      multipleChoice: false,
+      pricesSet: false
     };
     this.indexToMonth = [
       'bloop',
@@ -84,6 +91,8 @@ export default class AdminRoomPanel extends React.Component {
     this.highlightChoices = this.highlightChoices.bind(this);
     this.unhighlightChoices = this.unhighlightChoices.bind(this);
     this.filterInput = this.filterInput.bind(this);
+    this.resetPrices = this.resetPrices.bind(this);
+    this.submitPrices = this.submitPrices.bind(this);
   }
 
   switchMonth(event) {
@@ -265,6 +274,62 @@ export default class AdminRoomPanel extends React.Component {
     }
   }
 
+  createDay(options, inner, bookings = false) {
+    inner = Number(inner) || inner;
+
+    let indicators = new Array();
+
+    if (bookings) {
+      let currentDate = {
+            day: inner,
+            month: this.state.currentMonth,
+            year: this.state.currentYear
+          },
+          i = 0;
+      
+      while (
+        dateSmaller(bookings[i].to, currentDate) &&
+        ++i < bookings.length
+      ) {}
+      
+      if (i !== bookings.length) {
+        if (dateSmaller(bookings[i].to, currentDate, false)) {
+          indicators.push(
+            <div className="indicator" style={{'--color': '#f03'}} />
+          );
+
+          i += 1;
+        }
+
+        if (i !== bookings.length) {
+          if (bookings[i].from.day === currentDate.day &&
+            bookings[i].from.month === currentDate.month &&
+            bookings[i].from.year === currentDate.year
+          ) {
+            indicators.push(
+              <div className="indicator" style={{'--color': '#32cd32'}} />
+            );
+          }
+        }
+      }  
+    }
+
+    return ( 
+      <div
+        {...options}
+      >
+        {
+          indicators.length > 0 ?
+          <div className="indicators">
+            {indicators}
+          </div> :
+          null
+        }
+        {inner}
+      </div>
+    );
+  }
+
   filterInput(event) {
     let toString = date => {
       let key;
@@ -290,12 +355,10 @@ export default class AdminRoomPanel extends React.Component {
       let values = new Array(),
           field = event.target.parentNode.parentNode.firstChild;
 
-      while (field) {
+      while (field.nodeName === 'DIV') {
         values.push(Number(field.children[1].value))
         field = field.nextElementSibling;
       }
-
-      console.log(values);
 
       this.setState((state, props) => {
         let fromKey, toKey, to = incrementDate(state.chosenTo);
@@ -304,7 +367,7 @@ export default class AdminRoomPanel extends React.Component {
         toKey = toString(to);
 
         if (!state.prices.hasOwnProperty(toKey)) {
-          state.prices[toKey] = getDatePrices(state.chosenTo, state.prices);
+          state.prices[toKey] = getDatePrices(to, state.prices);
         }
         // КОНЕЧНАЯ ТОЧКА
         // ---------------
@@ -327,10 +390,49 @@ export default class AdminRoomPanel extends React.Component {
         }
         // УДАЛЕНИЕ ВСЕХ ПРОМЕЖУТОЧНЫХ
         // -------------------------------------------
-        // ВОЗВРАТ. БТВ, Я НАЧИНАЮ ЗАПУТЫВАТЬСЯ В КОДЕ
+        // re-re-re-tu-tu-tu-rn-rn-rn
+        state.pricesSet = true;
         return state;
-        // RETURN
+        // Have you ever thought about a thing that every person's code has
+        // their own unique things? I have, and that's fantastic.
       });
+    }
+  }
+
+  resetPrices() {
+    if (this.state.pricesSet) {
+      this.setState((state, props) => {
+        state.prices = Object.assign({}, props.priceInfo);
+        return state;
+      });
+    }
+  }
+
+  submitPrices() {
+    if (this.state.pricesSet) {
+      fetch(getFullLink('/villa-user-management/updatePrices'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          jwt: getCookie('jwt'),
+          roomId: this.props.roomId,
+          newPrices: this.state.prices
+        })
+      })
+        .then(response => {
+          if (response.ok) {
+            this.setState((state, props) => {
+              state.pricesSet = false;
+              props.setPI(state.prices);
+
+              return state;
+            });
+          } else {
+            alert('Что-то пошло не так. Обратитесь сами знаете к кому.');
+          }
+        });
     }
   }
 
@@ -376,71 +478,59 @@ export default class AdminRoomPanel extends React.Component {
 
     for (i = 0; i < 7; i += 1) {
       days.push(
-        <div className="weekday" key={"w" + i}>
-          {weekDays[i]}
-        </div>
+        this.createDay({
+          className: 'weekday',
+          key: `w${i}`
+        }, weekDays[i])
       );
     }
 
     for (i = 0; i < firstWeekDay; i += 1) {
       let day = previousMonthDayCount - firstWeekDay + i + 1;
       days.push(
-        <div className="other-month" key={"o" + day}>
-          {day}
-        </div>
+        this.createDay({
+          className: 'other-month',
+          key: `o${day}`
+        }, day)
       );
     }
 
     for (i = 1; i < firstDay; i += 1) {
       days.push(
-        <div
-          className="unavailable"
-          key={i}
-        >
-          {i}
-        </div>
+        this.createDay({
+          className: 'unavailable',
+          key: i
+        }, i)
       );
     }
 
     for (i; i <= lastDay; i += 1) {
       if (this.dateChosen(i)) {
         days.push(
-          <div
-            className="chosen"
-            key={i}
-          >
-            {i}
-          </div>
+          this.createDay({
+            className: 'chosen',
+            key: i
+          }, i, this.props.bookings)
         );
       } else {
         days.push(
-          <div
-            className="available"
-            key={i}
-            onClick={this.chooseDate}
-            onMouseEnter={this.state.multipleChoice ?
-              this.highlightChoices :
-              null
-            }
-            onMouseLeave={this.state.multipleChoice ?
-              this.unhighlightChoices :
-              null
-            }
-          >
-            {i}
-          </div>
+          this.createDay({
+            className: 'available',
+            key: i,
+            onClick: this.chooseDate,
+            onMouseEnter: this.multipleChoice ? this.highlightChoices : null,
+            onMouseLeave: this.multipleChoice ? this.unhighlightChoices : null
+          }, i, this.props.bookings)
         );
       }
     }
 
     for (i; i <= thisMonthDayCount; i += 1) {
       days.push(
-        <div
-          className="unavailable"
-          key={i}
-        >
-          {i}
-        </div>
+        this.createDay({
+          className: 'unavailable',
+          key: i
+        }, i)
       );
     }
 
@@ -448,9 +538,10 @@ export default class AdminRoomPanel extends React.Component {
 
     while (days.length % 7 !== 0) {
       days.push(
-        <div className="other-month" key={"o" + i}>
-          {i++}
-        </div>
+        this.createDay({
+          className: 'other-month',
+          key: `o${i}`
+        }, i)
       );
     }
 
@@ -518,6 +609,28 @@ export default class AdminRoomPanel extends React.Component {
           </button> 
           <form>
             {prices}
+            <button
+              className={
+                "admin-room-panel-prices-reset" + (this.state.pricesSet ?
+                  "" : " disabled"
+                )
+              }
+              type="button"
+              onClick={this.resetPrices}
+            >
+              Сброс цен
+            </button>
+            <button
+              className={
+                "admin-room-panel-prices-submit" + (this.state.pricesSet ?
+                  "" : " disabled"
+                )
+              }
+              type="button"
+              onClick={this.submitPrices}
+            >
+              Подтвердить
+            </button>
           </form>
         </div>
       </div>

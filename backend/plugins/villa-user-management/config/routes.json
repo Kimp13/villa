@@ -71,6 +71,14 @@
       "config": {
         "policies": []
       }
+    },
+    {
+	"method": "POST",
+	"path": "/updatePrices",
+	"handler": "prices.update",
+	"config": {
+		"policies": []
+	}
     }
   ]
 }
