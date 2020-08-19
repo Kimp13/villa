@@ -8,7 +8,7 @@ export default class Logout extends React.Component {
     this.componentDidMount = this.componentDidMount.bind(this);
   }
   componentDidMount() {
-    deleteCookie('a');
+    deleteCookie('jwta');
     deleteCookie('jwt');
     window.location.href = '/';
   }

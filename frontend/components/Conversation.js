@@ -217,9 +217,8 @@ export default class Conversation extends React.Component {
     };
 
     getApiResponse('/villa-user-management/getMessagesCount', {
-      ...this.props.auth,
       conversationId: this.props.data.id
-    }).then(count => {
+    }, this.props.auth).then(count => {
       if (count > 0) {
         if (count <= 50) {
           this.state.scrollDisabled = true;
@@ -252,10 +251,9 @@ export default class Conversation extends React.Component {
     this.setState(this.state);
 
     getApiResponse('/villa-user-management/getMessages', {
-      ...this.props.auth,
       _skip: this.state.skip,
       conversationId: this.props.data.id
-    })
+    }, this.props.auth)
       .then(data => {
 
         this.setState((state, props) => {

@@ -4,18 +4,21 @@ function getCookie(cookie, cookieString) {
   if (cookieString === undefined) {
     cookieString = document.cookie;
   }
+
   let allCookies = cookieString.split(';');
+
   for (let i = 0; i < allCookies.length;  i += 1) {
     let equalsSignIndex = allCookies[i].indexOf('=');
+
     if (allCookies[i].substring(0, equalsSignIndex).trim() === cookie) {
       return allCookies[i].substring(equalsSignIndex + 1);
     }
   }
+
   return null;
 }
 
 module.exports = () => {
-
   const strapi = global.strapi;
 
   let interval = setInterval(() => {
@@ -28,7 +31,7 @@ module.exports = () => {
               if (isAnonymous) {
                 user.id = 'anon' + user.id;
               } else {
-                user.id = user.id.toString();
+                user.id = String(user.id);
               }
 
               io.userToSocketId[user.id] = socket.id;
@@ -64,7 +67,7 @@ module.exports = () => {
           cookieString = '';
         }
 
-        let jwt, anonId;
+        let jwt;
 
         jwt = getCookie('jwt', cookieString);
 
@@ -80,17 +83,20 @@ module.exports = () => {
                 emitUnregisteredUser(socket);
               }
             }, e => {
+              console.log(e);
               emitUnregisteredUser(socket);
             });
         } else {
-          anonId = getCookie('a', cookieString);
-          if (anonId) {
-            strapi.query('anonymoususer').findOne({
-              id: anonId
-            })
-              .then(anon => {
-                if (anon) {
-                  emitUser(socket, anon, true);
+          jwt = getCookie('jwta', cookieString);
+          if (jwt) {
+            strapi.plugins['villa-user-management'].services.anon.verify(jwt)
+              .then(user => {
+                if (user.isAuthenticated) {
+                  if (user.isExpired) {
+                    socket.emit('tokenExpired', 1);
+                  } else {
+                    emitUser(socket, user, true);
+                  }
                 } else {
                   emitUnregisteredUser(socket);
                 }
@@ -145,5 +151,5 @@ module.exports = () => {
 
       strapi.io = io;
     }
-  });   
+  }, 200);   
 };

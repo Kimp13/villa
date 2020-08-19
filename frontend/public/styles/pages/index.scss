@@ -1,25 +1,216 @@
 @import '../foundation/variables';
 
+@font-face {
+  font-family: noto;
+  src: url('/fonts/NotoColorEmoji.ttf');
+}
+
 main {
   margin-bottom: 1rem;
   .content-flex-wrapper {
     display: flex;
     flex-wrap: wrap;
+    align-items: flex-start;
     margin-top: 1rem;
+
     & > * {
       padding: 0 1rem;
-      h2 {
+      & > h2 {
         text-align: center;
         margin: .5rem;
       }
     }
 
     .rooms-container {
-      flex: 500px 2;
+      flex: 700px 2;
+      display: flex;
+      flex-wrap: wrap;
+      h2 {
+        flex: 100%;
+      }
+      .room {
+        flex: 200px 1;
+        display: flex;
+        flex-direction: column;
+        margin: 1rem;
+        box-shadow: 0 0 .3rem #0008;
+        transition: box-shadow .3s ease;
+
+        h3 {
+          text-align: center;
+          padding: .25rem;
+        }
+
+        &-photos-wrapper {
+          position: relative;
+          overflow: hidden;
+          height: 15rem;
+        }
+
+        &-description {
+          text-align: center;
+          color: $lapis;
+          padding: .5rem;
+          flex-grow: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        &-link {
+          display: block;
+          text-align: center;
+          text-decoration: none;
+          text-transform: uppercase;
+          color: white;
+          padding: .5rem 1rem;
+          background: $lapis;
+          transition: background .3s ease;
+          &:hover {
+            background: darkblue;
+          }
+        }
+
+        &:hover {
+          box-shadow: 0 0 1rem #0008;
+        }
+      }
     }
 
     .news-container {
-      flex: 250px 1;
+      flex: 350px 1;
+      min-height: 25rem;
+      max-height: var(--max-height);
+      overflow-y: auto;
+      overflow-x: hidden;
+
+      .news-content {
+        .opened-news-wrapper {
+          &:not(.opened) {
+            & > * {
+              text-align: center;
+            }
+
+            .news {
+              margin-top: 1rem;
+              margin-bottom: 1rem;
+              border: .15rem solid $lapis;
+              background-color: transparent;
+              transition: transform .3s ease;
+
+              &:hover {
+                cursor: pointer;
+                transform: scale(0.925);
+              }
+
+              & > * {
+                overflow: hidden;
+              }
+
+              .news-header {
+                background: $lapis;
+                color: white;
+                padding: .25rem 0 .25rem .5rem;
+              } 
+
+              .news-author {
+                padding: .25rem .5rem;
+              }
+
+              .news-text {
+                padding: .25rem .5rem; 
+              }
+
+              .news-close {
+                display: none;
+              }
+            }
+          }
+
+          &.opened {
+            position: fixed;
+            z-index: 2;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            color: #00076d;
+
+            & > * {
+              text-align: left;
+            }
+
+            .news {
+              width: 100%;
+              height: 100%;
+              padding: 3rem 1rem 1rem;
+              font-size: 1.2rem;
+              overflow: auto;
+
+              & > * {
+                max-width: 40rem;
+                margin-right: auto;
+                margin-left: auto;
+              }
+
+              .news-header {
+                font-size: 1.8em;
+              }
+
+              .news-author {
+                font-size: 0.75em;
+                margin-bottom: 1rem;
+              }
+
+              .news-text {
+                .emoji {
+                  font-family: noto;
+                }
+
+                h1, h2, h3, h4, h5, h6, p, img {
+                  margin-top: .5rem;
+                  margin-bottom: .5rem;
+                }
+
+                img {
+                  display: block;
+                  width: 100%;
+                  max-width: 30rem;
+                  margin-right: auto;
+                  margin-left: auto;
+                }
+              }
+
+              .news-close {
+                color: gray;
+                position: fixed;
+                top: .75rem;
+                right: 1.5rem;
+                font-size: 2rem;
+
+                svg {
+                  width: 2rem;
+                  height: 2rem; 
+                }
+
+                &:hover {
+                  cursor: pointer;
+                }
+              }
+            }
+          }
+
+          .news-author {
+            color: gray;
+          }
+        }
+
+        &-null {
+          text-align: center;
+          color: gray;
+        }
+      }
     }
 
     .yandex-reviews,
@@ -31,11 +222,11 @@ main {
     }
 
     .yandex-reviews {
-      flex: 250px 1;
+      flex: 350px 1;
     }
 
     .yandex-map {
-      flex: 500px 2;
+      flex: 700px 2;
     }
   }
 }

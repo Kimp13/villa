@@ -2,13 +2,16 @@ let getAPIURL = () => process.env.NEXT_PUBLIC_API_URL || 'http://localhost:1337'
 
 let getFullLink = path => getAPIURL() + (path.charAt(0) === '/' ? '' : '/') + path;
 
-let getApiResponse = async (path, query) => {
+let getApiResponse = async (path, query, auth) => {
   let keys,
       queryString = '';
 
   if (query) {
     keys = Object.keys(query);
-    queryString = `?${keys[0]}=${query[keys[0]]}`;
+
+    if (keys.length > 0) {
+      queryString = `?${keys[0]}=${query[keys[0]]}`;
+    }
   } else {
     keys = new Array();
   }
@@ -19,7 +22,12 @@ let getApiResponse = async (path, query) => {
 
   let url = encodeURI(getFullLink(path) + queryString);
 
-  let response = await fetch(url);
+  let response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Custom-Authorization': auth || ''
+    }
+  });
 
   return await response.json();
 };

@@ -19,6 +19,9 @@
     },
     "phoneNumber": {
       "type": "string"
+    },
+    "jwt": {
+      "type": "string"
     }
   }
 }

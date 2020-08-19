@@ -2,6 +2,16 @@
 
 @include reset-all;
 
+@font-face {
+  font-family: pangolin;
+  src: url('/fonts/Pangolin-Regular.ttf');
+}
+
+@font-face {
+  font-family: Sail;
+  src: url('/fonts/Sail-Regular.ttf');
+}
+
 html {
   font-size: 2vh;
   font-family: pangolin;

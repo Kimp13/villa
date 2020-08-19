@@ -1,14 +1,15 @@
 const strapi = global.strapi,
-      getParamsFromUrl = require("../../../utils/searchToJson.js");
+      getParamsFromUrl = require("../../../utils/searchToJson"),
+      ctxAuth = require("../../../utils/ctxAuthentication");
 
 module.exports = {
   async find(ctx) {
-    let query;
+    let query, auth = ctxAuth(ctx);
 
     try {
       query = getParamsFromUrl(ctx.request.url);
     } catch(e) {
-      ctx.throw(400);
+      ctx.status = 400;
       return;
     }
 
@@ -16,32 +17,32 @@ module.exports = {
     if (query && query.conversationId) {
       let user;
 
-      if (query.jwt) {
+      if (auth.jwt) {
         try {
-          user = await strapi.plugins['users-permissions'].services.jwt.verify(query.jwt);
+          user = await strapi.plugins['users-permissions'].services.jwt.verify(auth.jwt);
         } catch(e) {
-          ctx.throw(401);
+          ctx.status = 401;
           return;
         }
 
         user.id = user.id.toString();
-      } else if (query.a) {
-        user = await strapi.query('anonymoususer').findOne({id: query.a});
+      } else if (auth.jwta) {
+        user = await strapi.plugins['villa-user-management'].services.anon.verify(auth.jwta);
 
-        if (user === null) {
-          ctx.throw(401);
+        if (!user.isAuthenticated) {
+          ctx.status = 401;
           return;
         }
 
         user.id = `anon${user.id}`;
       } else {
-        ctx.throw(400);
+        ctx.status = 401;
         return;
       }
 
       let conversation = await strapi.query('conversation').findOne({
-            id: query.conversationId
-          });
+        id: query.conversationId
+      });
 
       if (conversation) {
         for (let i = 0; i < conversation.participants.length; i += 1) {
@@ -63,21 +64,23 @@ module.exports = {
             }
 
             ctx.send(JSON.stringify(messages));
-
             return;
           }
         }
       }
     }
-    ctx.throw(400);
+
+    ctx.status = 400;
+    return;
   },
-  async count(ctx) {
-    let query;
+
+  count: async ctx => {
+    let query, auth = ctxAuth(ctx);
 
     try {
       query = getParamsFromUrl(ctx.request.url);
     } catch(e) {
-      ctx.throw(400);
+      ctx.status = 400;
       return;
     }
 
@@ -85,26 +88,26 @@ module.exports = {
     if (query && query.conversationId) {
       let user;
 
-      if (query.jwt) {
+      if (auth.jwt) {
         try {
-          user = await strapi.plugins['users-permissions'].services.jwt.verify(query.jwt);
+          user = await strapi.plugins['users-permissions'].services.jwt.verify(auth.jwt);
         } catch(e) {
-          ctx.throw(401);
+          ctx.status = 401;
           return;
         }
 
         user.id = user.id.toString();
-      } else if (query.a) {
-        user = await strapi.query('anonymoususer').findOne({id: query.a});
+      } else if (auth.jwta) {
+        user = await strapi.plugins['villa-user-management'].services.anon.verify(auth.jwta);
 
-        if (user === null) {
-          ctx.throw(401);
+        if (!user.isAuthenticated) {
+          ctx.status = 401;
           return;
         }
 
         user.id = `anon${user.id}`;
       } else {
-        ctx.throw(400);
+        ctx.status = 401;
         return;
       }
 
@@ -126,6 +129,8 @@ module.exports = {
         }
       }
     }
-    ctx.throw(400);
+    
+    ctx.status = 400;
+    return;
   }
 }

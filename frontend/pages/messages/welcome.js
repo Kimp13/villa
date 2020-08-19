@@ -1,7 +1,8 @@
 import React from "react";
 
-import { showError } from "../../libraries/forms.js";
-import { setCookie } from "../../libraries/cookies.js";
+import { showError } from "../../libraries/forms";
+import { setCookie } from "../../libraries/cookies";
+import { getFullLink } from "../../libraries/requests";
 
 import "../../public/styles/pages/messages/welcome.module.scss";
 import "../../public/styles/libraries/forms.module.scss";
@@ -146,10 +147,7 @@ class Welcome extends React.Component {
         requestBody += 'firstBooking=' + encodeURI(firstBooking);
       }
 
-      fetch(
-        (process.env.NEXT_PUBLIC_API_URL ||
-        'http://localhost:1337') +
-        '/villa-user-management/initializeNewAnonymous', {
+      fetch(getFullLink('/villa-user-management/initializeNewAnonymous'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
@@ -165,7 +163,7 @@ class Welcome extends React.Component {
           }
         })
         .then(json => {
-          setCookie('a', json.id);
+          setCookie('jwta', json.jwt);
           window.location.href = '/messages';
         })
         .catch(e => window.location.href = '/');

@@ -1,13 +1,16 @@
 import React from "react";
 import App from "next/app";
-import io from "../../backend/node_modules/socket.io-client/dist/socket.io.dev.js"
 import Layout from "../components/Layout";
-import { getCookie, setCookie } from "../libraries/cookies.js";
+import Loader from "../components/Loader";
+
+import { getFullLink } from "../libraries/requests";
+import io from "../../backend/node_modules/socket.io-client/dist/socket.io.dev.js"
 
 import '@fortawesome/fontawesome-free/js/fontawesome';
 import '@fortawesome/fontawesome-free/js/solid';
 import '@fortawesome/fontawesome-free/js/regular';
 import '@fortawesome/fontawesome-free/js/brands';
+
 
 import "../public/styles/components/footer.scss";
 import "../public/styles/components/header.scss";
@@ -22,27 +25,64 @@ export default class MyApp extends App {
   }
 
   componentDidMount() {
-    const socket = io.connect('localhost:1337');
+    const socket = io.connect(getFullLink('/'));
+    socket.on('tokenExpired', e => {
+      console.log(e);
+    });
+
+    window.addEventListener('load', function() {
+      setTimeout(() => {
+        let element = document.getElementById('first-loading');
+        element.style.opacity = '0';
+        element.addEventListener('transitionend', function () {
+          this.remove();
+        });
+      }, 500);
+    });
+
     socket.on('user', user => {
+      socket.off('tokenExpired');
       socket.user = user;
-      this.setState({
-        socket
+      this.setState((state, props) => {
+        state = {socket};
+
+        return state;
       });
     });
   }
 
   render() {
+    let main;
+
     if (this.state) {
       let { Component, pageProps } = this.props,
           socket = this.state.socket;
 
-      return (
+      main = (
         <Layout socket={socket} {...pageProps}>
           <Component {...pageProps}/>
         </Layout>
       );
     } else {
-      return null;
+      main = null;
     }
+
+    return (
+      <>
+        <div id="first-loading" style={{
+          position: 'fixed',
+          top: '0',
+          left: '0',
+          width: '100%',
+          height: '100%',
+          zIndex: '9999',
+          background: 'white',
+          transition: 'opacity .3s ease'
+        }}>
+          <Loader />
+        </div>
+        {main}
+      </>
+    );
   }
 }

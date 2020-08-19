@@ -33,5 +33,41 @@ module.exports = {
           resolve(true);
         })
     });
+  },
+  newRequest: (user, conversationId, text, rootId) => {
+    const query = {
+      type: 'booking',
+      authorId: user.id,
+      conversationId,
+      text
+    };
+    
+    strapi.query('message').create(query).then(message => {
+      strapi.query('conversation').update({
+        id: conversationId
+      },
+      {
+        lastMessage: message.id
+      });
+
+      if (rootId) {
+        strapi.io.to(strapi.io.userToSocketId[rootId]).emit('newMessage', query);
+
+        strapi.plugins['email'].services.email.sendTemplatedEmail({
+          to: 'o_she@mail.ru'
+        }, {
+          subject: 'Новая заявка на бронирование',
+          text: 'Доброго времени суток! На сайте villafiolent.ru новая заявка на бронирование.',
+          html: `
+            <h1>Новая заявка</h1>
+            <p>Телефон: <%= user.phoneNumber %>.</p>
+            <p>Имя: <%= user.name %>.</p>
+            <p>Фамилия: <%= user.surname %>.</p>`
+        }, {
+          user
+        })
+          .then(a => console.log(a), e => console.log(e));
+      }
+    });
   }
 };

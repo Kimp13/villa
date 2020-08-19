@@ -24,8 +24,6 @@ export default function(props) {
           content="initial-scale=1.0, width=device-width"
         />
         <link rel="icon" type="image/x-icon" href="favicon.ico" />
-        <link href="https://fonts.googleapis.com/css2?family=Pangolin&display=swap" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Sail&display=swap" rel="stylesheet" />
       </Head>
       <Header user={props.socket.user}/>
       {child}

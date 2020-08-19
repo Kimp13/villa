@@ -44,14 +44,17 @@ module.exports = {
     let user;
 
     if (body.anon) {
-      user = await strapi.query('anonymoususer').findOne({
-        id: body.anon.substring(4)
-      });
-    } else {
-      user = true;
+      user = await strapi.plugins['villa-user-management'].controllers.anon.verify(query.jwta);
+
+      if (!user.isAuthenticated) {
+        ctx.throw(401);
+        return;
+      }
+
+      user.id = 'anon' + user.id;
     }
 
-    if (user && verifyBody(body)) {
+    if (verifyBody(body)) {
       if (
         await strapi
           .query('user', 'users-permissions')
@@ -81,14 +84,15 @@ module.exports = {
                 id: newUser.id
               });
 
-        if (body.anon) {
+        if (user) {
           const conversation = await strapi.query('conversation').findOne({
-            participants_contains: body.anon
+            participants_contains: user.id
           });
 
           for (let i = 0; i < conversation.participants.length; i += 1) {
-            if (conversation.participants[i] === body.anon) {
+            if (conversation.participants[i] === user.id) {
               conversation.participants[i] = String(newUser.id);
+              break;
             }
           }
 
@@ -99,7 +103,7 @@ module.exports = {
           });
 
           strapi.query('message').update({
-            authorId: body.anon
+            authorId: user.id
           }, {
             authorId: newUser.id
           });

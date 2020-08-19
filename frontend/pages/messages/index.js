@@ -21,12 +21,12 @@ class Messages extends React.Component {
     super(props);
 
     let jwt = getCookie("jwt"),
-        a = getCookie("a");
+        jwta = getCookie("jwta");
 
-    if (a && this.props.socket.user.isAnonymous) {
-      this.auth = {a};
+    if (jwta && this.props.socket.user.isAnonymous) {
+      this.auth = 'Anon ' + jwta;
     } else if (jwt && this.props.socket.user.isAnonymous === false) {
-      this.auth = {jwt};
+      this.auth = jwt;
     } else {
       window.location.href = '/auth';
     }
@@ -37,9 +37,8 @@ class Messages extends React.Component {
       }
 
       getApiResponse('/villa-user-management/getConversations', {
-        ...this.auth,
         id: data.conversationId
-      })
+      }, this.auth)
         .then(conversation => {
           this.setState((state, props) => {
             state.skip += 1;
@@ -71,7 +70,7 @@ class Messages extends React.Component {
     this.checkScroll = this.checkScroll.bind(this);
     this.assignRoom = this.assignRoom.bind(this);
 
-    getApiResponse("/villa-user-management/getConversationsCount", this.auth)
+    getApiResponse("/villa-user-management/getConversationsCount", {}, this.auth)
       .then(count => {
         count = parseInt(count);
 
@@ -112,9 +111,8 @@ class Messages extends React.Component {
     let element = document.getElementsByClassName('conversations-content')[0];
 
     getApiResponse('/villa-user-management/getConversations', {
-      ...this.auth,
       _skip: this.state.skip
-    })
+    }, this.auth)
       .then(data => {
         let conversations = new Array();
 

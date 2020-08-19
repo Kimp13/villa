@@ -2,30 +2,6 @@
   "routes": [
     {
       "method": "GET",
-      "path": "/getUser",
-      "handler": "auth.getUser",
-      "config": {
-        "policies": []
-      }
-    },
-    {
-      "method": "GET",
-      "path": "/getAnonymousUser",
-      "handler": "anon.get",
-      "config": {
-        "policies": []
-      }
-    },
-    {
-      "method": "POST",
-      "path": "/initializeNewAnonymous",
-      "handler": "anon.new",
-      "config": {
-        "policies": []
-      }
-    },
-    {
-      "method": "GET",
       "path": "/getConversations",
       "handler": "conversations.find",
       "config": {
@@ -57,6 +33,30 @@
       }
     },
     {
+      "method": "GET",
+      "path": "/getNews",
+      "handler": "news.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/newRequest",
+      "handler": "bookings.new",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/initializeNewAnonymous",
+      "handler": "anon.new",
+      "config": {
+        "policies": []
+      }
+    },
+    {
       "method": "POST",
       "path": "/createBooking",
       "handler": "bookings.create",
@@ -73,12 +73,12 @@
       }
     },
     {
-	"method": "POST",
-	"path": "/updatePrices",
-	"handler": "prices.update",
-	"config": {
-		"policies": []
-	}
+    	"method": "POST",
+    	"path": "/updatePrices",
+    	"handler": "prices.update",
+    	"config": {
+    		"policies": []
+    	}
     }
   ]
 }

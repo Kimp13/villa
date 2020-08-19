@@ -283,7 +283,7 @@ export default class Auth extends React.Component {
     })
       .then(data => {
         if (data.ok) {
-          deleteCookie('a');
+          deleteCookie('jwta');
           setCookie('jwt', data.statusText, { maxAge: 1209600 });
           window.location.href = '/';
         } else if (data.status === 403) {

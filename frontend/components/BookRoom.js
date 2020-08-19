@@ -1,6 +1,7 @@
 import React from "react";
 
 import ChooseDate from "./ChooseDate";
+import Loader from "./Loader";
 
 import {
   incrementDate,
@@ -8,6 +9,8 @@ import {
   dateSmallerNonStrict
 } from "../libraries/dates";
 import { getDatePrices } from "../libraries/prices";
+import { getApiResponse } from "../libraries/requests";
+import { getCookie } from "../libraries/cookies";
 
 import "../public/styles/components/bookRoom.scss";
 
@@ -124,7 +127,35 @@ export default class BookRoom extends React.Component {
   book(event) {
     event.preventDefault();
     if (this.props.user.isAuthenticated) {
-      window.location.href = '/messages';
+      this.setState((state, props) => {
+        state.loading = true;
+
+        getApiResponse('/villa-user-management/newRequest', {
+          booking: `${this.props.roomId}` + 
+            `_${this.state.from.day}.${this.state.from.month}.${this.state.from.year}` +
+            `_${this.state.to.day}.${this.state.to.month}.${this.state.to.year}`
+        }, getCookie('jwt') || getCookie('jwta'))
+          .then(res => {
+            if (res.ok) {
+              window.location.href = '/messages';
+            } else {
+              this.setState((state, props) => {
+                if (res.statusCode === 403) {
+                  state.errorMessage = "Вы уже подали заявку на бронирование. " +
+                    "Дождитесь решения её судьбы.";
+                } else {
+                  state.errorMessage = "К сожалению, произошла ошибка. Попробуйте позже " +
+                    "или обратитесь к администрации.";
+                }
+                state.loading = false;
+
+                return state;
+              });
+            }
+          })
+
+        return state;
+      });
     } else {
       window.localStorage.setItem('firstBooking',
         `${this.props.roomId}` + 
@@ -146,19 +177,36 @@ export default class BookRoom extends React.Component {
   }
 
   render() {
-    let submitButton;
+    let submitButton, component;
 
-    if (this.state.from && this.state.to) {
-      submitButton = (
-        <input
-          type="submit"
-          className="date-submit"
-          value="Забронировать"
-          onClick={this.book}
-        />
+    if (this.state.loading) {
+      component = <Loader />;
+    } else if (this.state.errorMessage) {
+      component = (
+        <p className="book-room-error">
+          {this.state.errorMessage}
+        </p>
       );
     } else {
-      submitButton = null;
+      component = (
+        <form className="flex-book-form">
+          <ChooseDate
+            bookings={this.props.bookings}
+            from={this.props.from}
+            to={this.props.to}
+            setData={this.getData}
+          />
+          {
+            this.state.from && this.state.to ?
+            <input
+              type="submit"
+              className="date-submit"
+              value="Забронировать"
+              onClick={this.book}
+            /> : null
+          }
+        </form>
+      );
     }
 
     return (
@@ -167,15 +215,7 @@ export default class BookRoom extends React.Component {
           <h2>
             Забронировать
           </h2>
-          <form className="flex-book-form">
-            <ChooseDate
-              bookings={this.props.bookings}
-              from={this.props.from}
-              to={this.props.to}
-              setData={this.getData}
-            />
-            {submitButton}
-          </form>
+          {component}
         </div>
         <div className="room-prices">
           <h2>
