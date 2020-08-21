@@ -85,12 +85,14 @@
   width: 100%;
   background: #3691;
   overflow-x: hidden;
+
   &:not(.opened) {
     &:hover {
       cursor: pointer;
       background: #3692;
     }
   }
+
   &.opened {
     display: flex;
     flex-direction: column;
@@ -169,6 +171,7 @@
     &-message {
       margin: .1rem .5rem;
       width: 100%;
+
       &.booking {
         border-radius: .5rem;
         overflow: hidden;
@@ -236,6 +239,10 @@
             }
           }
         }
+      }
+
+      svg {
+        margin-left: .4rem;
       }
     }
   }

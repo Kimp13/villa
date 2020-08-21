@@ -106,42 +106,6 @@ module.exports = () => {
           }
         }
 
-        socket.on('newMessage', data => {
-          strapi.query('conversation').findOne({
-            id: data.conversationId
-          })
-            .then(conversation => {
-              if (conversation) {
-                for (let i = 0; i < conversation.participants.length; i += 1) {
-                  if (conversation.participants[i] === socket.userId) {
-                    let createQuery = {
-                          authorId: socket.userId,
-                          conversationId: conversation.id,
-                          type: 'default',
-                          text: data.text
-                        };
-
-                  strapi.query('message').create(createQuery)
-                    .then(message => {
-                      for (let participant of conversation.participants) {
-                        io.to(strapi.io.userToSocketId[participant]).emit(
-                          'newMessage',
-                          createQuery
-                        );
-                      }
-
-                      strapi.query('conversation').update({
-                        id: conversation.id
-                      }, {
-                        lastMessage: message.id
-                      });
-                    }, e => console.log(e));
-                  }
-                }
-              }
-            }, e => console.log(e));
-        });
-
         socket.on('disconnect', () => {
           if (socket.userId) {
             delete io.userToSocketId[socket.userId];

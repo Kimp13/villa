@@ -19,5 +19,6 @@
     "gulp-dest": "^0.2.3",
     "gulp-postcss": "^8.0.0",
     "gulp-sass": "^4.1.0"
-  }
+  },
+  "license": "UNLICENSED"
 }

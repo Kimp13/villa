@@ -50,6 +50,14 @@
     },
     {
       "method": "POST",
+      "path": "/sendMessage",
+      "handler": "messages.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
       "path": "/initializeNewAnonymous",
       "handler": "anon.new",
       "config": {

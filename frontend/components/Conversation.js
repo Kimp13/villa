@@ -6,7 +6,7 @@ import ChooseDate from "./ChooseDate";
 import { shortenTextTo } from "../libraries/texts.js";
 import { getApiResponse, postApi } from "../libraries/requests.js";
 
-import "../public/styles/components/conversation.module.scss";
+import "../public/styles/components/conversation.scss";
 
 function RejectConfirmation(props) {
   function makeDateString(date) {
@@ -183,26 +183,36 @@ export default class Conversation extends React.Component {
       if (data.conversationId === props.data.id) {
         this.setState((state, props) => {
           this.componentDidUpdate = this.updateAtNewMessage;
+
+
           state.skip += 1;
           state.count += 1;
           state.lastMessage.authorId = data.authorId;
           state.lastMessage.created_at = data.created_at;
           state.lastMessage.text = data.text;
           state.lastMessage.type = data.type;
+
           if (state.opened) {
-            this.pushMessages([data], state, props);
+            state.messages.push(this.createMessage(
+              data,
+              (data.authorId === this.props.socket.user.id) ?
+                't' :
+                'r'
+            ));
           } else {
             state.newMessages.push(data);
           }
+
           return state;
         });
       }
     });
 
     this.rooms = new Object();
-    
-    String.prototype.cleanInside = function() {
-      return this.replace(/  +/g, ' ').replace(/\n\n+/g, '\n');
+    this.auth = this.props.auth.substring(0, 4) === 'Anon' ? {
+      jwta: this.props.auth.substring(5)
+    } : {
+      jwt: this.props.auth.substring(7)
     };
 
     this.state = {
@@ -211,6 +221,7 @@ export default class Conversation extends React.Component {
       loading: true,
       scrollDisabled: false,
       skip: 0,
+      pendingMessagesCount: 0,
       lastMessage: this.props.data.lastMessage,
       messages: new Array(),
       newMessages: new Array()
@@ -319,14 +330,52 @@ export default class Conversation extends React.Component {
       field = target.previousElementSibling;
     }
 
-    let value = field.value.trim().cleanInside();
+    let value = field.value.trim().replace(/  +/g, ' ').replace(/\n\n+/g, '\n');
 
     if (value.length > 0) {
-      this.props.socket.emit('newMessage', {
-        ...this.props.auth,
-        text: value,
-        conversationId: this.props.data.id
-      });
+      this.setState((state, props) => {
+        let message = new Object();
+
+        message.authorId = this.props.socket.user.id;
+        message.text = value;
+        message.id = 'd' + Date.now();
+        message.type = 'text';
+
+        state.messages.push(this.createMessage(message, 'd'));
+
+        postApi('/villa-user-management/sendMessage', {
+          text: value,
+          conversationId: this.props.data.id,
+          ...this.auth
+        })
+          .then(res => {
+            this.setState((state, props) => {
+              let index = this.linearReverseFindByKey(message.id);
+
+              if (this.findByKey(res.id) === -1) {
+                if (res.ok) {
+                  message.id = res.statusText;
+
+                  state.messages[index] = this.createMessage(message, 's');
+                } else {
+                  let count = document.getElementsByClassName('fa-exclamation-circle').length;
+                  message.id = 'e' + count;
+
+                  state.messages[index] = this.createMessage(message, 'e');
+                }
+              } else {
+                state.messages.splice(index, 1);
+              }
+
+              state.pendingMessagesCount -= 1;
+              return state;
+            });
+          }, e => {
+            console.log(e);
+          });
+
+        return state;
+      })
     }
 
     field.value = '';
@@ -341,15 +390,42 @@ export default class Conversation extends React.Component {
     e.target.style.height = `${this.getNumberOfLines(e.target.value) * 1.5}rem`;
   }
 
-  findByKey(key) {
+  linearReverseFindByKey(key) {
     key = String(key);
-    for (let i = 0; i < this.state.messages.length; i += 1) {
-      if (this.state.messages[i]) {
-        if (this.state.messages[i].key === key) {
-          return i;
+
+    for (let i = this.state.messages.length - 1; i >= 0; i -= 1) {
+      if (this.state.messages[i].key === key) {
+        return i;
+      }
+    }
+
+    return -1;
+  }
+
+  findByKey(key) {
+    key = parseInt(key, 10);
+
+    let l = 0, r = this.state.messages.length, m, num;
+
+    while (r - l > 0) {
+      m = parseInt((l + r) / 2, 10);
+
+      if (this.state.messages[m].key.charCodeAt(0) > 57) {
+        l += 1;
+      } else {
+        num = Number(this.state.messages[m].key);
+
+        if (num === key) {
+          return m;
+        } else if (num > key) {
+          r = m;
+        } else {
+          l = m;
         }
       }
     }
+
+    return -1;
   }
 
   createBooking(messageId, accepted, parts) {
@@ -380,7 +456,7 @@ export default class Conversation extends React.Component {
 
           if (index) {
             this.setState((state, props) => {
-              state.messages[index] = this.createMessage(data, key);
+              state.messages[index] = this.createMessage(data);
               return state;
             });
           }
@@ -395,12 +471,28 @@ export default class Conversation extends React.Component {
 
     this.setState((state, props) => {
       data.text += '_accepted';
-      state.messages[this.findByKey(key)] = this.createMessage(data, key);
+      state.messages[this.findByKey(key)] = this.createMessage(data);
       return state;
     });
   }
 
-  createMessage(data, key) {
+  createMessage(data, status = 'r') {
+    const statusToIcon = status => {
+      if (status !== 'r') {
+        const statuses = {
+          'd': 'far fa-clock',
+          's': 'fas fa-check',
+          't': 'fas fa-check-double',
+          'e': 'fas fa-exclamation-circle'
+        };
+
+        return <i className={statuses[status]} />;
+      }
+
+      return null;
+    }
+    const key = data.id;
+
     if (data.type === 'booking') {
       let parts = data.text.split('_'),
           footer = null,
@@ -416,7 +508,7 @@ export default class Conversation extends React.Component {
         getApiResponse(`/rooms/${parts[0]}`).then(room => {
           this.setState((state, props) => {
             props.assignRoom(parts[0], room.name);
-            state.messages[this.findByKey(key)] = this.createMessage(data, key);
+            state.messages[this.findByKey(key)] = this.createMessage(data);
             return state;
           });
         }, e => {
@@ -486,6 +578,7 @@ export default class Conversation extends React.Component {
           key={key}
         >
           {data.text}
+          {statusToIcon(status)}
         </p>
       );
     }
@@ -494,14 +587,14 @@ export default class Conversation extends React.Component {
   unshiftMessages(messages, state, props) {
     let authorId,
         length = state.messages.unshift(
-          this.createMessage(messages[0], state.messages.length)
+          this.createMessage(messages[0])
         );
 
     for (let i = 1; i < messages.length; i += 1) {
       authorId = state.messages[0].props['data-author-id'];
       if (authorId !== messages[i].authorId) {
         state.messages.unshift(
-          <p className="conversation-content-author" key={'a' + length}>
+          <p className="conversation-content-author" key={'a' + state.messages[0].key}>
             {authorId === props.socket.user.id ?
               'Вы' :
               props.data.participants[authorId].name}
@@ -509,12 +602,12 @@ export default class Conversation extends React.Component {
         );
       }
 
-      length = state.messages.unshift(this.createMessage(messages[i], length));
+      length = state.messages.unshift(this.createMessage(messages[i]));
     }
 
     authorId = state.messages[0].props['data-author-id'];
     state.messages.unshift(
-      <p className="conversation-content-author" key={'a' + length}>
+      <p className="conversation-content-author" key={'a' + state.messages[0].key}>
         {authorId === props.socket.user.id ?
           'Вы' :
           props.data.participants[authorId].name}
@@ -527,14 +620,14 @@ export default class Conversation extends React.Component {
 
     if (length === 0) {
       state.messages.push(
-        <p className="conversation-content-author" key={'a' + length}>
+        <p className="conversation-content-author" key={'a' + messages[0].id}>
           {messages[0].authorId === props.socket.user.id ?
             'Вы' :
             props.data.participants[messages[0].authorId].name}
         </p>
       );
 
-      length = state.messages.push(this.createMessage(messages[0], length));
+      length = state.messages.push(this.createMessage(messages[0]));
       i += 1;
     }
 
@@ -542,7 +635,7 @@ export default class Conversation extends React.Component {
     for (i; i < messages.length; i += 1) {
       if (state.messages[length - 1].props['data-author-id'] !== messages[i].authorId) {
         state.messages.push(
-          <p className="conversation-content-author" key={'a' + length}>
+          <p className="conversation-content-author" key={'a' + messages[i].id}>
             {messages[i].authorId === props.socket.user.id ?
               'Вы' :
               props.data.participants[messages[i].authorId].name}
@@ -550,7 +643,7 @@ export default class Conversation extends React.Component {
         );
       }
 
-      length = state.messages.push(this.createMessage(messages[i], length));
+      length = state.messages.push(this.createMessage(messages[i]));
     }
   }
 
