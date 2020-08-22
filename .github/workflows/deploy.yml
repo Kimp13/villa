@@ -1,0 +1,35 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v1.4.3
+
+      - name: Install packages and build Strapi
+        - run: cd backend
+        - run: npm ci
+
+      - name: Install packages and build Next.js
+        - run: cd ../frontend
+        - run: npm ci
+
+      - run: cd ..
+
+      - name: Copy repository contents via scp
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          port: ${{ secrets.PORT }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "."
+          target: "/var/www/villa"

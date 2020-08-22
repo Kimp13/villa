@@ -9,7 +9,7 @@
     "react-dom": "^16.13.1"
   },
   "scripts": {
-    "dev": "next -p 80",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start"
   },
