@@ -26,7 +26,7 @@ export default class MyApp extends App {
 
   componentDidMount() {
     const socket = io.connect(getFullLink('/'), {
-      path: 'api/socket.io',
+      path: '/api/socket.io',
       transports: ['websocket']
     });
     socket.on('tokenExpired', e => {
