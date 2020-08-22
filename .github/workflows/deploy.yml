@@ -14,7 +14,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v1.4.3
 
-      - run: cd villa/backend
+      - run: cd backend
       - run: ls -a
       - run: npm ci
       - run: npm run build
