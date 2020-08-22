@@ -24,6 +24,11 @@ export default function(props) {
           content="initial-scale=1.0, width=device-width"
         />
         <link rel="icon" type="image/x-icon" href="favicon.ico" />
+        <script
+          data-ad-client="ca-pub-9036577259588469"
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"
+        />
       </Head>
       <Header user={props.socket.user}/>
       {child}
