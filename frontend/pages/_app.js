@@ -16,7 +16,7 @@ import "../public/styles/components/header.scss";
 import "../public/styles/components/layout.scss";
 import "../public/styles/pages/index.scss";
 
-const io = require(getFullLink('/socket.io/socket.io.js');
+const io = require(getFullLink('/socket.io/socket.io.js'));
 
 export default class MyApp extends App {
   constructor(props) {
