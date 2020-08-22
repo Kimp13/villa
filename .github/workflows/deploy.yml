@@ -14,14 +14,11 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v1.4.3
 
-      - name: Install packages and build Strapi
-        - run: cd backend
-        - run: npm ci
-
-      - name: Install packages and build Next.js
-        - run: cd ../frontend
-        - run: npm ci
-
+      - run: cd backend
+      - run: npm ci
+      - run: npm run build
+      - run: cd ../frontend
+      - run: npm ci
       - run: cd ..
 
       - name: Copy repository contents via scp
