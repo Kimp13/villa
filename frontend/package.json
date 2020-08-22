@@ -10,7 +10,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "env NODE_ENV=production next build",
     "start": "next start"
   },
   "devDependencies": {
