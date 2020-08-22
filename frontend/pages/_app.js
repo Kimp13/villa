@@ -4,7 +4,6 @@ import Layout from "../components/Layout";
 import Loader from "../components/Loader";
 
 import { getFullLink } from "../libraries/requests";
-import io from getFullLink('/socket.io/socket.io.js');
 
 import '@fortawesome/fontawesome-free/js/fontawesome';
 import '@fortawesome/fontawesome-free/js/solid';
@@ -16,6 +15,8 @@ import "../public/styles/components/footer.scss";
 import "../public/styles/components/header.scss";
 import "../public/styles/components/layout.scss";
 import "../public/styles/pages/index.scss";
+
+const io = require(getFullLink('/socket.io/socket.io.js');
 
 export default class MyApp extends App {
   constructor(props) {
