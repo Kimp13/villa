@@ -25,7 +25,7 @@ module.exports = () => {
     if (strapi.server) {
       clearInterval(interval);
 
-      const io = require('socket.io')(strapi.server),
+      const io = require('socket.io')(strapi.server, {transports: ['websocket']}),
             userManagement = strapi.plugins['villa-user-management'].controllers,
             emitUser = (socket, user, isAnonymous) => {
               if (isAnonymous) {
