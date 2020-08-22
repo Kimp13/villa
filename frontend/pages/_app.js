@@ -27,20 +27,16 @@ export default class MyApp extends App {
   componentDidMount() {
     const socket = io.connect(getFullLink('/'));
     socket.on('tokenExpired', e => {
-      console.log(e);
-    });
-
-    window.addEventListener('load', function() {
-      setTimeout(() => {
-        let element = document.getElementById('first-loading');
-        element.style.opacity = '0';
-        element.addEventListener('transitionend', function () {
-          this.remove();
-        });
-      }, 500);
+      alert(e);
     });
 
     socket.on('user', user => {
+      let element = document.getElementById('first-loading');
+      element.style.opacity = '0';
+      element.ontransitionend = function () {
+        this.remove();
+      };
+
       socket.off('tokenExpired');
       socket.user = user;
       this.setState((state, props) => {
