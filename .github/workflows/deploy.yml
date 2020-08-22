@@ -14,13 +14,8 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v1.4.3
 
-      - run: cd backend/backend
-      - run: ls -a
-      - run: npm ci
-      - run: npm run build
-      - run: cd ../frontend
-      - run: npm ci
-      - run: cd ..
+      - run: cd backend && nmp ci && npm run build && cd ..
+      - run: cd frontend && npm ci && cd ..
 
       - name: Copy repository contents via scp
         uses: appleboy/scp-action@master
