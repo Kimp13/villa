@@ -4,7 +4,7 @@ import Layout from "../components/Layout";
 import Loader from "../components/Loader";
 
 import { getFullLink } from "../libraries/requests";
-import io from "../../backend/node_modules/socket.io-client/dist/socket.io.js";
+import io from getFullLink('/socket.io/socket.io.js');
 
 import '@fortawesome/fontawesome-free/js/fontawesome';
 import '@fortawesome/fontawesome-free/js/solid';
@@ -25,10 +25,7 @@ export default class MyApp extends App {
   }
 
   componentDidMount() {
-    const socket = io.connect(getFullLink('/'), {
-      path: '/api/socket.io',
-      transports: ['websocket']
-    });
+    const socket = io.connect(getFullLink('/'), {path: '/api/socket.io'});
     socket.on('tokenExpired', e => {
       alert(e);
     });
