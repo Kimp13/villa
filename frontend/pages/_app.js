@@ -25,7 +25,7 @@ export default class MyApp extends App {
   }
 
   componentDidMount() {
-    const socket = io.connect(getFullLink('/'), {path: '/api/socket.io'});
+    const socket = io.connect(process.env.NEXT_PUBLIC_DOMAIN_URL, {path: '/api/socket.io'});
     socket.on('tokenExpired', e => {
       alert(e);
     });

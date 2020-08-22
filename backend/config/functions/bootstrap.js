@@ -55,7 +55,7 @@ module.exports = () => {
 
       io.userToSocketId = new Object();
 
-      io.on('connection', socket => {
+      io.sockets.on('connection', socket => {
         let cookieString;
 
         try {
