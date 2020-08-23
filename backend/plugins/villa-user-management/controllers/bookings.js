@@ -4,6 +4,64 @@ const strapi = global.strapi,
       validateBookingText = require("../../../utils/validateBookingText");
 
 module.exports = {
+  find: async ctx => {
+    function mergeBookings(bookings) {
+      const length = bookings.length;
+      let i = 0, result = new Array();
+
+      for (i; i < length; i += 1) {
+        let itemToPush = bookings[i];
+
+        while (i + 1 < length &&
+          dateSmaller(bookings[i + 1].from, itemToPush.to, false)) {
+          i += 1;
+          if (dateSmaller(itemToPush.to, bookings[i].to)) {
+            itemToPush.to.year = bookings[i].to.year;
+            itemToPush.to.month = bookings[i].to.month;
+            itemToPush.to.day = bookings[i].to.day;
+          }
+        }
+
+        result.push(itemToPush);
+      }
+
+      return result;
+    }
+
+    let search;
+
+    try {
+      search = searchToJson(ctx.request.url);
+    } catch(e) {
+      ctx.status = 400;
+      return;
+    }
+
+    if (search.roomId) {
+      const userAuth = auth(ctx),
+            bookings = strapi.query('booking').find({roomId: search.roomId});
+
+      if (userAuth.jwt) {
+        try {
+          let user = await strapi.plugins['users-permissions'].services.jwt.verify(userAuth.jwt);
+
+          user = await strapi.query('user', 'users-permissions').findOne({
+            id: user.id
+          });
+
+          if (user.role.type === 'root') {
+            ctx.send(bookings);
+          }
+        } catch(e) {console.log(e);}
+      }
+
+      ctx.send(mergeBookings(bookings));
+      return;
+    }
+
+    ctx.status = 400;
+    return;
+  },
   create: async ctx => {
     let body;
 
@@ -70,19 +128,19 @@ module.exports = {
     ctx.throw(400);
   },
   new: async ctx => {
-    let auth = auth(ctx),
+    let userAuth = auth(ctx),
         user;
 
-    if (auth.jwt) {
+    if (userAuth.jwt) {
       try {
-        user = await strapi.plugins['users-permissions'].services.jwt.verify(auth.jwt);
+        user = await strapi.plugins['users-permissions'].services.jwt.verify(userAuth.jwt);
 
       } catch(e) {
         ctx.throw(401);
         return;
       }
-    } else if (auth.jwta) {
-      user = await strapi.plugins['villa-user-management'].services.anon.verify(auth.jwta);
+    } else if (userAuth.jwta) {
+      user = await strapi.plugins['villa-user-management'].services.anon.verify(userAuth.jwta);
 
       if (user.isAuthenticated === false) {
         ctx.throw(401);

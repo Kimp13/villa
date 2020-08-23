@@ -64,13 +64,13 @@ class OneNews extends React.Component {
     this.setState((state, props) => {
       if (state.opened) {
         document.documentElement.style.overflowY = 'auto';
-        document.getElementsByClassName('content-flex-wrapper')[1].style.display = '';
+        document.getElementsByClassName('yandex-reviews')[0].style.display = '';
         document.getElementsByTagName('footer')[0].style.display = '';
         target.style.overflowY = '';
         state.opened = false;
       } else {
         document.documentElement.style.overflowY = 'hidden';
-        document.getElementsByClassName('content-flex-wrapper')[1].style.display = 'none';
+        document.getElementsByClassName('yandex-reviews')[0].style.display = 'none';
         document.getElementsByTagName('footer')[0].style.display = 'none';
         target.style.overflowY = 'hidden';
         state.opened = true;
@@ -320,23 +320,26 @@ class Rooms extends React.Component {
 }
 
 export default function({ main, socket }) {
+  let rooms, news, announcement = null;
+
+  if (socket.user) {
+    rooms = <Rooms isAdmin={socket.user.isRoot} />;
+    news = <News isAdmin={socket.user.isRoot} />;
+    announcement = <AnonymousAnnouncement user={socket.user} />;
+  } else {
+    rooms = news = <Loader />
+  }
+
   return (
     <main>
       <IntroductionDiv content={main}/>
-      <AnonymousAnnouncement user={socket.user} />
       <div className="content-flex-wrapper">
-        <Rooms isAdmin={socket.user.isRoot} />
-        <News isAdmin={socket.user.isRoot} />
+        {rooms}
+        {news}
       </div>
-      <div className="content-flex-wrapper">
-        <div className="yandex-map">
-          <h2>Карта</h2>
-          <iframe src="https://yandex.ru/map-widget/v1/-/CCQpZDwAHA"/>
-        </div>
-        <div className="yandex-reviews">
-          <h2>Отзывы</h2>
-          <iframe src="https://yandex.ru/maps-reviews-widget/5012059488?comments"/>
-        </div>
+      <div className="yandex-reviews">
+        <h2>Отзывы</h2>
+        <iframe src="https://yandex.ru/maps-reviews-widget/5012059488?comments"/>
       </div>
     </main>
   );

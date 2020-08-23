@@ -42,6 +42,14 @@
     },
     {
       "method": "GET",
+      "path": "/getBookings",
+      "handler": "bookings.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
       "path": "/newRequest",
       "handler": "bookings.new",
       "config": {

@@ -21,26 +21,35 @@ export default class MyApp extends App {
   constructor(props) {
     super(props);
 
+    this.state = {
+      socket: {
+        user: null
+      }
+    };
+
     this.componentDidMount = this.componentDidMount.bind(this);
   }
 
   componentDidMount() {
-    const socket = io.connect(process.env.NEXT_PUBLIC_DOMAIN_URL, {path: '/api/socket.io'});
+    let apiUrl = /^(https?:\/\/)?(((\w+\.)+\w{2,})|localhost)(:\d{1,5})?/
+          .exec(process.env.NEXT_PUBLIC_API_URL),
+        path = process.env.NEXT_PUBLIC_API_URL.substring(apiUrl[0].length + apiUrl.index);
+
+    const socket = io.connect(apiUrl[0], {path});
+
     socket.on('tokenExpired', e => {
-      alert(e);
+      socket.off('user');
+      
+      alert('Срок вашей сессии иссяк. Войдите снова.');
+      window.location.href = '/auth?type=signin';
     });
 
     socket.on('user', user => {
-      let element = document.getElementById('first-loading');
-      element.style.opacity = '0';
-      element.ontransitionend = function () {
-        this.remove();
-      };
-
       socket.off('tokenExpired');
       socket.user = user;
+
       this.setState((state, props) => {
-        state = {socket};
+        state.socket = socket;
 
         return state;
       });
@@ -48,37 +57,12 @@ export default class MyApp extends App {
   }
 
   render() {
-    let main;
-
-    if (this.state) {
-      let { Component, pageProps } = this.props,
-          socket = this.state.socket;
-
-      main = (
-        <Layout socket={socket} {...pageProps}>
-          <Component {...pageProps}/>
-        </Layout>
-      );
-    } else {
-      main = null;
-    }
+    let { Component, pageProps } = this.props;
 
     return (
-      <>
-        <div id="first-loading" style={{
-          position: 'fixed',
-          top: '0',
-          left: '0',
-          width: '100%',
-          height: '100%',
-          zIndex: '9999',
-          background: 'white',
-          transition: 'opacity .3s ease'
-        }}>
-          <Loader />
-        </div>
-        {main}
-      </>
+      <Layout socket={this.state.socket} {...pageProps}>
+        <Component {...pageProps}/>
+      </Layout>
     );
   }
 }
