@@ -1,5 +1,6 @@
 import React from "react";
 import Head from "next/head";
+import Loader from "../../components/Loader";
 
 import { showError } from "../../libraries/forms.js";
 import { setCookie, deleteCookie } from "../../libraries/cookies.js";
@@ -11,29 +12,6 @@ import "../../public/styles/libraries/forms.module.scss";
 export default class Auth extends React.Component {
   constructor(props) {
     super(props);
-
-    this.state = {
-      isSignin: null
-    }
-
-    if (
-      this.props.socket.user.isAuthenticated &&
-      !this.props.socket.user.isAnonymous
-    ) {
-      window.location.href = '/profile';
-    }
-
-    this.componentDidMount = this.componentDidMount.bind(this);
-    this.switchForm = this.switchForm.bind(this);
-    this.signUp = this.signUp.bind(this);
-  }
-
-  componentDidMount() {
-    this.setState((state, props) => {
-      state.isSignin = (window.location.search !== '?type=signup');
-      state.firstTime = true;
-      return state;
-    });
   }
 
   componentDidUpdate() {
@@ -305,139 +283,159 @@ export default class Auth extends React.Component {
   }
 
   render() {
-    if (this.state.isSignin === null) {
-      return null;
-    } else {
-      let title = 'Авторизация';
-      if (this.state.isSignin) {
-        title = 'Вход | Villa Guest House на Фиоленте';
-        history.replaceState(null, '', '/auth?type=signin');
-      } else {
-        title = 'Регистрация | Villa Guest House на Фиоленте';
-        history.replaceState(null, '', '/auth?type=signup');
-      }
-      return (
-        <>
-          <Head>
-            <title>{title}</title>
-          </Head>
-          <div className="authorization">
-            <div
-              className={"form-switcher" + (this.state.isSignin ? ' active' : '')}
-              onClick={this.state.isSignin ? null : this.switchForm}
-            >
-              Вход
-            </div>
-            <div
-              className={"form-switcher" + (this.state.isSignin ? '' : ' active')}
-              onClick={this.state.isSignin ? this.switchForm : null}
-            >
-              Регистрация
-            </div>
-            <div className={
-              "form-switcher-underline" + (this.state.isSignin ? '' : ' right')
-            } />
-            <div className="authorization-main">
-              <form>
-                <input
-                  className="keyboard-input"
-                  type="text"
-                  name="username"
-                  maxLength="64"
-                  placeholder="Логин"
-                  autoComplete="username"
-                />
-                <input
-                  className="keyboard-input"
-                  type="password"
-                  name="password"
-                  maxLength="128"
-                  placeholder="Пароль"
-                  autoComplete="current-password"
-                />
-                <label htmlFor="saveuser-checkbox">
+    if (this.props.socket.user) {
+      if (this.state.loaded) {
+        let title = 'Авторизация';
+        if (this.state.isSignin) {
+          title = 'Вход | Villa Guest House на Фиоленте';
+          history.replaceState(null, '', '/auth?type=signin');
+        } else {
+          title = 'Регистрация | Villa Guest House на Фиоленте';
+          history.replaceState(null, '', '/auth?type=signup');
+        }
+        return (
+          <React.Fragment>
+            <Head>
+              <title>{title}</title>
+            </Head>
+            <div className="authorization">
+              <div
+                className={"form-switcher" + (this.state.isSignin ? ' active' : '')}
+                onClick={this.state.isSignin ? null : this.switchForm}
+              >
+                Вход
+              </div>
+              <div
+                className={"form-switcher" + (this.state.isSignin ? '' : ' active')}
+                onClick={this.state.isSignin ? this.switchForm : null}
+              >
+                Регистрация
+              </div>
+              <div className={
+                "form-switcher-underline" + (this.state.isSignin ? '' : ' right')
+              } />
+              <div className="authorization-main">
+                <form>
                   <input
-                    type="checkbox"
-                    name="saveuser"
-                    id="saveuser-checkbox"
-                    onClick={this.checkUserSave} 
+                    className="keyboard-input"
+                    type="text"
+                    name="username"
+                    maxLength="64"
+                    placeholder="Логин"
+                    autoComplete="username"
                   />
-                  <div className="checkbox">
-                    <i className="fas fa-check" />
-                  </div>
-                  Запомнить меня
-                </label>
-                <input type="submit" value="Вход" onClick={this.signIn} />
-              </form>
-              <form>
-                <input
-                  className="keyboard-input"
-                  type="text"
-                  name="name"
-                  maxLength="64"
-                  placeholder="Имя"
-                  autoComplete="name"
-                />
-                <input
-                  className="keyboard-input"
-                  type="text"
-                  name="surname"
-                  maxLength="128"
-                  placeholder="Фамилия"
-                  autoComplete="name"
-                />
-                <input
-                  type="submit"
-                  value="Продолжить"
-                  onClick={this.startRegistration}
-                />
-              </form>
-              <form className="right">
-                <button type="button" onClick={this.endRegistration}>
-                  <i className="fas fa-arrow-left" />
-                </button>
-                <input
-                  className="keyboard-input"
-                  type="text"
-                  name="email"
-                  maxLength="256"
-                  placeholder="Электронная почта"
-                  autoComplete="email"
-                />
-                <input
-                  className="keyboard-input"
-                  type="text"
-                  name="username"
-                  maxLength="64"
-                  placeholder="Логин"
-                  autoComplete="username"
-                />
-                <input
-                  className="keyboard-input"
-                  type="password"
-                  name="password"
-                  maxLength="128"
-                  placeholder="Пароль"
-                  autoComplete="new-password"
-                />
-                <input
-                  className="keyboard-input"
-                  type="password"
-                  name="password-repeat"
-                  maxLength="128"
-                  placeholder="Повтор пароля"
-                  autoComplete="new-password"
-                />
-                <input
-                  type="submit"
-                  value="Зарегистрироваться"
-                  onClick={this.signUp}
-                />
-              </form>
+                  <input
+                    className="keyboard-input"
+                    type="password"
+                    name="password"
+                    maxLength="128"
+                    placeholder="Пароль"
+                    autoComplete="current-password"
+                  />
+                  <label htmlFor="saveuser-checkbox">
+                    <input
+                      type="checkbox"
+                      name="saveuser"
+                      id="saveuser-checkbox"
+                      onClick={this.checkUserSave} 
+                    />
+                    <div className="checkbox">
+                      <i className="fas fa-check" />
+                    </div>
+                    Запомнить меня
+                  </label>
+                  <input type="submit" value="Вход" onClick={this.signIn} />
+                </form>
+                <form>
+                  <input
+                    className="keyboard-input"
+                    type="text"
+                    name="name"
+                    maxLength="64"
+                    placeholder="Имя"
+                    autoComplete="name"
+                  />
+                  <input
+                    className="keyboard-input"
+                    type="text"
+                    name="surname"
+                    maxLength="128"
+                    placeholder="Фамилия"
+                    autoComplete="name"
+                  />
+                  <input
+                    type="submit"
+                    value="Продолжить"
+                    onClick={this.startRegistration}
+                  />
+                </form>
+                <form className="right">
+                  <button type="button" onClick={this.endRegistration}>
+                    <i className="fas fa-arrow-left" />
+                  </button>
+                  <input
+                    className="keyboard-input"
+                    type="text"
+                    name="email"
+                    maxLength="256"
+                    placeholder="Электронная почта"
+                    autoComplete="email"
+                  />
+                  <input
+                    className="keyboard-input"
+                    type="text"
+                    name="username"
+                    maxLength="64"
+                    placeholder="Логин"
+                    autoComplete="username"
+                  />
+                  <input
+                    className="keyboard-input"
+                    type="password"
+                    name="password"
+                    maxLength="128"
+                    placeholder="Пароль"
+                    autoComplete="new-password"
+                  />
+                  <input
+                    className="keyboard-input"
+                    type="password"
+                    name="password-repeat"
+                    maxLength="128"
+                    placeholder="Повтор пароля"
+                    autoComplete="new-password"
+                  />
+                  <input
+                    type="submit"
+                    value="Зарегистрироваться"
+                    onClick={this.signUp}
+                  />
+                </form>
+              </div>
             </div>
-          </div>
-        </>
-      );
+          </React.Fragment>
+        );
+      } else {
+        this.setState((state, props) => {
+          state.isSignin = (window.location.search !== '?type=signup');
+          state.firstTime = true;
+
+          if (
+            this.props.socket.user.isAuthenticated &&
+            !this.props.socket.user.isAnonymous
+          ) {
+            window.location.href = '/profile';
+          }
+
+          this.componentDidMount = this.componentDidMount.bind(this);
+          this.switchForm = this.switchForm.bind(this);
+          this.signUp = this.signUp.bind(this);
+
+          return state;
+        });
+      }
     }
+
+    return <Loader />;
   }
 }
