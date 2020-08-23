@@ -33,7 +33,8 @@ export default class MyApp extends App {
   componentDidMount() {
     let apiUrl = /^(https?:\/\/)?(((\w+\.)+\w{2,})|localhost)(:\d{1,5})?/
           .exec(process.env.NEXT_PUBLIC_API_URL),
-        path = process.env.NEXT_PUBLIC_API_URL.substring(apiUrl[0].length + apiUrl.index);
+        path = process.env.NEXT_PUBLIC_API_URL
+          .substring(apiUrl[0].length + apiUrl.index) + '/socket.io';
 
     const socket = io.connect(apiUrl[0], {path});
 
