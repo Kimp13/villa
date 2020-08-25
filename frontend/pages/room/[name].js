@@ -17,7 +17,7 @@ import Loader from "../../components/Loader";
 import "../../public/styles/pages/room.scss";
 
 export async function getStaticPaths () {
-  const rooms = await getApiResponse('/rooms', {_sort: 'id:asc'});
+  const rooms = await getApiResponse('/villa/getRooms', {_sort: 'id:asc'});
 
   let paths = new Array();
 
@@ -32,7 +32,7 @@ export async function getStaticPaths () {
 }
 
 export async function getStaticProps ({ params }) {
-  const room = await getApiResponse('/rooms', {name: params.name});
+  const room = await getApiResponse('/villa/getRooms', {name: params.name});
 
   return {
     props: {
@@ -55,7 +55,7 @@ export default class extends React.Component {
   }
 
   setPI(priceInfo) {
-    this.setState((state, props) => {
+    this.setState(state => {
       state.room.priceInfo = priceInfo;
 
       return state;
@@ -111,7 +111,7 @@ export default class extends React.Component {
         Promise.all([
           getApiResponse('/getTime'),
           getApiResponse(
-            '/villa-user-management/getBookings', {
+            '/villa/getBookings', {
               roomId: this.props.room.id
             },
             this.props.socket.user.isRoot ?
@@ -260,7 +260,7 @@ class BookRoom extends React.Component {
       this.setState((state, props) => {
         state.loading = true;
 
-        getApiResponse('/villa-user-management/newRequest', {
+        getApiResponse('/villa/newRequest', {
           booking: `${this.props.roomId}` + 
             `_${this.state.from.day}.${this.state.from.month}.${this.state.from.year}` +
             `_${this.state.to.day}.${this.state.to.month}.${this.state.to.year}`
@@ -749,7 +749,7 @@ class AdminRoomPanel extends React.Component {
 
   submitPrices() {
     if (this.state.pricesSet) {
-      fetch(getFullLink('/villa-user-management/updatePrices'), {
+      fetch(getFullLink('/villa/updatePrices'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

@@ -10,7 +10,7 @@ module.exports = async auth => {
 
     user.id = String(user.id);
   } else if (auth.jwta) {
-    user = await strapi.plugins['villa-user-management'].services.anon.verify(auth.jwta);
+    user = await strapi.plugins.villa.services.anon.verify(auth.jwta);
 
     if (!user.isAuthenticated) {
       return false;

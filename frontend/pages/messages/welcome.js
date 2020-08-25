@@ -1,4 +1,4 @@
-import React from "react";
+import Loader from "../../components/Loader";
 
 import { showError } from "../../libraries/forms";
 import { setCookie } from "../../libraries/cookies";
@@ -284,7 +284,8 @@ class Welcome extends React.Component {
         </div>
       );
     }
-    return null;
+
+    return <Loader />;
   }
 }
 

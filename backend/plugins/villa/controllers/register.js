@@ -44,7 +44,7 @@ module.exports = {
     let user;
 
     if (body.anon) {
-      user = await strapi.plugins['villa-user-management'].controllers.anon.verify(query.jwta);
+      user = await strapi.plugins.villa.controllers.anon.verify(query.jwta);
 
       if (!user.isAuthenticated) {
         ctx.throw(401);

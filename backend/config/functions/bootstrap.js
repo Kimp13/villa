@@ -1,4 +1,14 @@
 'use strict';
+const showdown = require('showdown'),
+      emojiRegex = require('emoji-regex')(),
+      parser = new showdown.Converter({
+        noHeaderId: true,
+        simplifiedAutoLink: true,
+        strikethrough: true,
+        openLinksInNewWindow: true,
+        emoji: true,
+        underline: true
+      });
 
 function getCookie(cookie, cookieString) {
   if (cookieString === undefined) {
@@ -26,7 +36,7 @@ module.exports = () => {
       clearInterval(interval);
 
       const io = require('socket.io')(strapi.server),
-            userManagement = strapi.plugins['villa-user-management'].controllers,
+            userManagement = strapi.plugins.villa.controllers,
             emitUser = (socket, user, isAnonymous) => {
               if (isAnonymous) {
                 user.id = 'anon' + user.id;
@@ -52,6 +62,23 @@ module.exports = () => {
                 isAuthenticated: false
               });
             };
+
+      strapi.parseMD = text => (
+        parser
+          .makeHtml(text)
+          .replace(
+            emojiRegex,
+            "<span class=\"emoji\">$&</span>"
+          )
+          .replace(
+            /(<\/.+?>)(.+?)(<.+?>)/g,
+            '$1<span class="plain">$2</span>$3'
+          )
+          .replace(
+            /src="((\/.+?)+?)"/g,
+            `src="${process.env.API_URL || 'http://localhost:1337'}$1"`
+          )
+      );
 
       io.userToSocketId = new Object();
 
@@ -89,7 +116,7 @@ module.exports = () => {
         } else {
           jwt = getCookie('jwta', cookieString);
           if (jwt) {
-            strapi.plugins['villa-user-management'].services.anon.verify(jwt)
+            strapi.plugins.villa.services.anon.verify(jwt)
               .then(user => {
                 if (user.isAuthenticated) {
                   if (user.isExpired) {

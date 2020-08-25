@@ -1,7 +1,7 @@
 import React from "react";
-import BackgroundWithSwitchers from '../components/BackgroundWithSwitchers.js'
+import Link from "next/link";
 
-import "../public/styles/components/introductionDiv.module.scss";
+import "../public/styles/components/introductionDiv.scss";
 
 import { getFullLink } from "../libraries/requests.js";
 
@@ -9,53 +9,109 @@ export default class IntroductionDiv extends React.Component {
   constructor(props) {
     super(props);
 
-    this.backgrounds = this.props.content.images;
+    this.componentDidMount = () => {
+      setInterval(this.incrementIndex, 5000);
 
-    this.state = {
-      background: this.backgrounds[0],
-      index: 0
+      let phoneUs;
+
+      if (this.props.content.id === 1) {
+        let captions = [
+          'Хотите получить незабываемые воспоминания от отдыха в Крыму?',
+          'Хотите быть окутанными любовью и отличным отдыхом в Крыму?',
+          'Хотите провести отдых в Крыму в шаговой доступности от Яшмового пляжа?'
+        ];
+
+        phoneUs = captions[Math.floor(captions.length * Math.random())];
+      } else {
+        phoneUs = 'Позвони...';
+      }
+
+      this.setState((state, props) => ({
+        backgroundIndex: 0,
+        phoneUs
+      }));
     };
 
-    this.componentDidMount = this.componentDidMount.bind(this);
-    this.hideContent = this.hideContent.bind(this);
-    this.showContent = this.showContent.bind(this);
-  }
+    this.incrementIndex = () => {
+      this.setState((state, props) => {
+        if (state.backgroundIndex + 1 === props.content.images.length) {
+          state.backgroundIndex = 0;
+        } else {
+          state.backgroundIndex += 1;
+        }
 
-  componentDidMount() {
-    this.content = document.getElementsByClassName('introduction-content')[0];
-    this.showButton = document.getElementsByClassName('introduction-content-open')[0];
-  }
-
-  hideContent() {
-    this.content.classList.add('hidden');
-    this.showButton.classList.remove('hidden');
-  }
-
-  showContent() {
-    this.content.classList.remove('hidden');
-    this.showButton.classList.add('hidden');
+        return state;
+      });
+    }
   }
 
   render() {
-    let background = <BackgroundWithSwitchers backgrounds={this.backgrounds}/>;
+    let style = null;
+
+    if (this.state) {
+      let photo = this.props.content.images[this.state.backgroundIndex],
+          backgroundSize,
+          width;
+
+      width = photo.width / photo.height * window.innerHeight;
+
+      if (width >= window.innerWidth) {
+        backgroundSize = 'auto 100%';
+      } else {
+        backgroundSize = '100% auto';
+      }
+
+      style = {
+        backgroundImage: `url(${photo.url})`,
+        backgroundSize
+      };
+    }
 
     return (
-      <div className="introduction" onClick={this.switchBGs}>
+      <div
+        className="introduction"
+        style={style}
+      >
         <div className="introduction-content">
           <h1>
-            {this.props.content.header}
-            <button className="introduction-content-close" onClick={this.hideContent}>
-              ❌
-            </button>
+            {this.props.content.name}
           </h1>
-          <p>
-            {this.props.content.description}
-          </p>
+          <h2>
+            {this.props.content.header}
+          </h2>
+          <div
+            className="introduction-content-list"
+            dangerouslySetInnerHTML={{__html: this.props.content.description}}
+          />
+          <div className="introduction-phone">
+            <p className="introduction-phone-caption">
+              <span
+                dangerouslySetInnerHTML={{
+                  __html: this.state ? this.state.phoneUs : null
+                }}
+              />
+              <Link href="/phoneUs.js" as="/phoneUs">
+                <a style={{
+                  display: 'inline-block',
+                  marginLeft: '.3rem'
+                }}>
+                  Просто позвоните нам
+                </a>
+              </Link>
+              :
+            </p>
+            <div className="introduction-phone-link">
+              <div className="introduction-phone-link-figure">
+                <div className="introduction-phone-link-figure-circle" />
+                <div className="introduction-phone-link-figure-circle" />
+                <i className="fas fa-phone" />
+              </div>
+              <a href="tel:+79785025000">
+                +79785025000
+              </a>
+            </div>
+          </div>
         </div>
-        <button className="introduction-content-open hidden" onClick={this.showContent}>
-          <i className="fas fa-angle-double-up" />
-        </button>
-        {background}
       </div>
     );
   }

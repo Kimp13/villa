@@ -18,9 +18,9 @@ export default class BackgroundWithSwitchers extends React.Component {
                        this.props.backgrounds :
                        [
                          {
-                          url: getFullLink('/uploads/no_photo_0b3f6b97ff.png'),
-                          width: 1,
-                          height: 1
+                          url: '/images/no-photo.jpg',
+                          width: 640,
+                          height: 360
                          }
                        ];
 
@@ -160,8 +160,6 @@ export default class BackgroundWithSwitchers extends React.Component {
 
         this.backgroundContainer.current.prepend(img);
         this.state.leftOffset += 1;
-
-        console.log(index);
 
         let imageWidth = this.backgrounds[index].width /
                          this.backgrounds[index].height *

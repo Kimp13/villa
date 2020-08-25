@@ -1,22 +1,5 @@
 const strapi = global.strapi,
-      showdown = require('showdown'),
       searchToJson = require("../../../utils/searchToJson");
-
-showdown.setOption('noHeaderId', true);
-showdown.setOption('simplifiedAutoLink', true);
-showdown.setOption('strikethrough', true);
-showdown.setOption('openLinksInNewWindow', true);
-showdown.setOption('emoji', true);
-showdown.setOption('underline', true);
-
-const parser = new showdown.Converter({
-  noHeaderId: true,
-  simplifiedAutoLink: true,
-  strikethrough: true,
-  openLinksInNewWindow: true,
-  emoji: true,
-  underline: true
-});
 
 function makeDateString(date) {
   let string = new String();
@@ -70,15 +53,7 @@ module.exports = {
       news[i] = {
         author: author + time,
         header: news[i].header,
-        text: parser.makeHtml(news[i].text)
-          .replace(
-            /[\uD83C-\uDBFF\uDC00-\uDFFF]+/g,
-            "<span class=\"emoji\">$&</span>"
-          )
-          .replace(
-            /src="((\/.+?)+?)"/g,
-            `src="${process.env.API_URL || 'http://localhost:1337'}$1"`
-          )
+        text: strapi.parseMD(news[i].text)
       }
     }
 

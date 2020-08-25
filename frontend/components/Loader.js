@@ -15,7 +15,7 @@ export default class Loader extends React.Component {
       items.push(
         <div className="loader-item" key={i} style={{
           animationDelay: `${i * (this.props.animationDelay || 100) / 1000}s`,
-          animationDuration: animationDuration
+          animationDuration
         }} />
       );
     }

@@ -2,6 +2,14 @@
   "routes": [
     {
       "method": "GET",
+      "path": "/getRooms",
+      "handler": "rooms.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
       "path": "/getConversations",
       "handler": "conversations.find",
       "config": {

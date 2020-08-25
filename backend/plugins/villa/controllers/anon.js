@@ -33,7 +33,7 @@ module.exports = {
     });
 
     if (firstBooking) {
-      strapi.plugins['villa-user-management'].services.bookings.newRequest(
+      strapi.plugins.villa.services.bookings.newRequest(
         anon,
         newConversation.id,
         firstBooking,

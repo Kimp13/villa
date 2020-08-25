@@ -11,9 +11,6 @@ import '@fortawesome/fontawesome-free/js/solid';
 import '@fortawesome/fontawesome-free/js/regular';
 import '@fortawesome/fontawesome-free/js/brands';
 
-
-import "../public/styles/components/footer.scss";
-import "../public/styles/components/header.scss";
 import "../public/styles/components/layout.scss";
 import "../public/styles/pages/index.scss";
 

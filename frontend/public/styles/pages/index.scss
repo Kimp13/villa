@@ -1,10 +1,5 @@
 @import '../foundation/variables';
 
-@font-face {
-  font-family: noto;
-  src: url('/fonts/NotoColorEmoji.ttf');
-}
-
 main {
   margin-bottom: 1rem;
   .content-flex-wrapper {
@@ -165,7 +160,7 @@ main {
 
               .news-text {
                 .emoji {
-                  font-family: noto;
+                  font-family: emoji;
                 }
 
                 & > * {

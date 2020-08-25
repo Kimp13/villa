@@ -140,7 +140,7 @@ module.exports = {
         return;
       }
     } else if (userAuth.jwta) {
-      user = await strapi.plugins['villa-user-management'].services.anon.verify(userAuth.jwta);
+      user = await strapi.plugins.villa.services.anon.verify(userAuth.jwta);
 
       if (user.isAuthenticated === false) {
         ctx.throw(401);
@@ -168,7 +168,7 @@ module.exports = {
                   })).users[0].id),
                   conversationId;
 
-              strapi.plugins['villa-user-management'].services.bookings.newRequest(
+              strapi.plugins.villa.services.bookings.newRequest(
                 user, booking.conversationId, search.booking, rootId
               );
 
@@ -201,7 +201,7 @@ module.exports = {
           participants_contains: [user.id, rootId]
         })).id;
 
-        strapi.plugins['villa-user-management'].services.bookings.newRequest(
+        strapi.plugins.villa.services.bookings.newRequest(
           user, conversationId, search.booking, rootId
         );
 

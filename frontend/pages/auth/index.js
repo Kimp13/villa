@@ -12,6 +12,10 @@ import "../../public/styles/libraries/forms.module.scss";
 export default class Auth extends React.Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      loaded: false
+    };
   }
 
   componentDidUpdate() {
@@ -27,20 +31,22 @@ export default class Auth extends React.Component {
       }
     }
 
-    let container = document.getElementsByClassName('authorization-main')[0],
-        form;
+    if (this.state.loaded) {
+      let container = document.getElementsByClassName('authorization-main')[0],
+          form;
 
-    if (this.state.isSignin) {
-      form = container.children[0];
-      form.classList.remove('left');
-      form.nextElementSibling.classList.add('right');
-    } else {
-      form = container.children[1];
-      form.classList.remove('right');
-      form.previousElementSibling.classList.add('left');
+      if (this.state.isSignin) {
+        form = container.children[0];
+        form.classList.remove('left');
+        form.nextElementSibling.classList.add('right');
+      } else {
+        form = container.children[1];
+        form.classList.remove('right');
+        form.previousElementSibling.classList.add('left');
+      }
+
+      container.style.height = form.offsetHeight + 'px';
     }
-
-    container.style.height = form.offsetHeight + 'px';
   }
 
   switchForm() {
@@ -246,7 +252,7 @@ export default class Auth extends React.Component {
       body.anon = this.props.socket.user.id;
     }
 
-    fetch(getFullLink('villa-user-management/signUp'), {
+    fetch(getFullLink('villa/signUp'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -293,6 +299,7 @@ export default class Auth extends React.Component {
           title = 'Регистрация | Villa Guest House на Фиоленте';
           history.replaceState(null, '', '/auth?type=signup');
         }
+
         return (
           <React.Fragment>
             <Head>
@@ -419,6 +426,7 @@ export default class Auth extends React.Component {
         this.setState((state, props) => {
           state.isSignin = (window.location.search !== '?type=signup');
           state.firstTime = true;
+          state.loaded = true;
 
           if (
             this.props.socket.user.isAuthenticated &&
@@ -427,7 +435,7 @@ export default class Auth extends React.Component {
             window.location.href = '/profile';
           }
 
-          this.componentDidMount = this.componentDidMount.bind(this);
+          this.componentDidUpdate = this.componentDidUpdate.bind(this);
           this.switchForm = this.switchForm.bind(this);
           this.signUp = this.signUp.bind(this);
 

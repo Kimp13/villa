@@ -11,6 +11,7 @@
   },
   "devDependencies": {},
   "dependencies": {
+    "emoji-regex": "^9.0.0",
     "knex": "<0.20.0",
     "showdown": "^1.9.1",
     "socket.io": "^2.3.0",

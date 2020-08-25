@@ -32,7 +32,7 @@ module.exports = {
       user.id = user.id.toString();
       query._limit = 10;
     } else if (auth.jwta) {
-      user = await strapi.plugins['villa-user-management'].services.anon.verify(auth.jwta);
+      user = await strapi.plugins.villa.services.anon.verify(auth.jwta);
 
       if (!user.isAuthenticated) {
         ctx.throw(401);
@@ -152,7 +152,7 @@ module.exports = {
 
       ctx.send(count);
     } else if (auth.jwta) {
-      user = await strapi.plugins['villa-user-management'].services.anon.verify(auth.jwta);
+      user = await strapi.plugins.villa.services.anon.verify(auth.jwta);
 
       if (user.isAuthenticated) {
         ctx.send(1);

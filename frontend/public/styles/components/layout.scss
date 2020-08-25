@@ -3,21 +3,82 @@
 @include reset-all;
 
 @font-face {
-  font-family: pangolin;
-  src: url('/fonts/Pangolin-Regular.ttf');
+  font-family: defaultFont;
+  font-weight: 400;
+  src: url('/fonts/ElMessiri-Regular.ttf');
 }
 
 @font-face {
-  font-family: Sail;
-  src: url('/fonts/Sail-Regular.ttf');
+  font-family: defaultFont;
+  font-weight: 700;
+  src: url('/fonts/ElMessiri-Bold.ttf');
+}
+
+@font-face {
+  font-family: handwritingFont;
+  src: url('/fonts/Sacramento-Regular.ttf');
+}
+
+@font-face {
+  font-family: emoji;
+  src: url('/fonts/NotoColorEmoji.ttf');
 }
 
 html {
-  font-size: 2vh;
-  font-family: pangolin;
+  font-size: calc(1.5vh + .5vw);
+  font-family: defaultFont;
   color: $lapis;
   overflow-x: hidden;
 }
+
+/* --------------------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------------------- */
+/* ------------------------------ SLIDEOUT.JS STYLES ------------------------------------- */
+body {
+  width: 100%;
+  height: 100%;
+}
+
+.slideout-menu {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 256px;
+  min-height: 100vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  z-index: 0;
+  display: none;
+}
+
+.slideout-menu-left {
+  left: 0;
+}
+
+.slideout-menu-right {
+  right: 0;
+}
+
+.slideout-panel {
+  position: relative;
+  z-index: 1;
+  will-change: transform;
+  background-color: #FFF; /* A background-color is required */
+  min-height: 100vh;
+}
+
+.slideout-open,
+.slideout-open body,
+.slideout-open .slideout-panel {
+  overflow: hidden;
+}
+
+.slideout-open .slideout-menu {
+  display: block;
+}
+/* ---------------------------- SLIDEOUT.JS STYLES END ----------------------------------- */
+/* --------------------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------------------- */
 
 .big {
   font-size: 1.5rem;
@@ -34,6 +95,194 @@ html {
 svg {
   width: 1.25rem;
   vertical-align: middle;
+}
+
+
+
+.aside-toggle {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 6rem;
+  height: 2rem;
+  padding: .2rem 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  flex-wrap: wrap;
+  background-color: white;
+  transition: width .3s ease;
+  overflow: hidden;
+
+  &.opened {
+    width: 2rem;
+
+    .aside-toggle-bar {
+      &:nth-child(1) {
+        transform: rotateZ(45deg);
+      }
+
+      &:nth-child(2) {
+        opacity: 0;
+      }
+
+      &:nth-child(3) {
+        transform: rotateZ(-45deg);
+      }
+    }
+  }
+
+  &:hover {
+    cursor: pointer;
+  }
+
+  &-bar {
+    width: 1.5rem;
+    margin: 0 .25rem;
+    height: .25rem;
+    border-radius: .1rem;
+    background-color: $lapis;
+
+    &:nth-child(1) {
+      transition: transform .3s ease;
+      transform-origin: 0 90%;
+    }
+
+    &:nth-child(2) {
+      transition: opacity .3s ease;
+    }
+
+    &:nth-child(3) {
+      transition: transform .3s ease;
+      transform-origin: 0 10%;
+    }
+  }
+
+  &-caption {
+    flex: 100% 1 1;
+    width: 4rem;
+    font-size: 1.25rem;
+    font-family: defaultFont;
+    color: $lapis;
+  }
+}
+
+aside {
+  nav {
+    a {
+      text-decoration: none;
+      text-align: center;
+      display: block;
+      padding: .1rem .5rem;
+
+      &:active,
+      &:link,
+      &:visited {
+        color: inherit;
+      }
+
+      &:not(.aside-logo) {
+        border-left-width: .2rem;
+        border-left-style: solid;
+        border-left-color: transparent;
+
+        svg {
+          margin-right: .4rem;
+        }
+
+        &:hover {
+          border-left-color: $lapis;
+        }
+      }
+
+      svg {
+        vertical-align: middle;
+      }
+    }
+
+    .aside-logo {
+      color: inherit;
+      height: 7rem;
+      margin: 0 1rem 0 0;
+
+      * {
+        color: inherit;
+      }
+
+      svg {
+        vertical-align: top;
+        display: inline-block;
+        transform: translate(.5rem, .5rem);
+        transition: transform .3s ease;
+      }
+
+      &-main {
+        display: inline-block;
+        font-family: handwritingFont;
+        font-size: 450%;
+        height: 70%;
+      }
+
+      p {
+        text-align: center;
+        height: 30%;
+      }
+
+      &:hover svg {
+        transform: translate(.5rem, .5rem) scale(1.5);
+      }
+    }
+  }
+}
+
+footer {
+  background-color: $lapis;
+  color: white;
+  overflow: hidden;
+  
+  .footer-waves {
+    position: relative;
+    height: 5rem;
+    .wave {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 200%;
+      height: 100%;
+      background-image: url('/images/wave.svg');
+      background-repeat: repeat-x;
+      background-size: contain;
+      animation-name: move;
+      animation-timing-function: ease-in-out;
+      animation-iteration-count: infinite;
+
+      &:first-child {
+        animation-duration: 8s;
+        animation-direction: alternate;
+        opacity: 1;
+      }
+
+      &:nth-child(2) {
+        animation-duration: 10s;
+        animation-direction: alternate-reverse;
+        opacity: .8;
+      }
+
+      &:nth-child(3) {
+        animation-duration: 12s;
+        animation-direction: alternate;
+        opacity: .6;
+      }
+    }
+  }
+}
+
+@keyframes move {
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 @media all and (orientation: landscape) {

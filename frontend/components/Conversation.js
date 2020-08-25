@@ -227,7 +227,7 @@ export default class Conversation extends React.Component {
       newMessages: new Array()
     };
 
-    getApiResponse('/villa-user-management/getMessagesCount', {
+    getApiResponse('/villa/getMessagesCount', {
       conversationId: this.props.data.id
     }, this.props.auth).then(count => {
       if (count > 0) {
@@ -261,7 +261,7 @@ export default class Conversation extends React.Component {
     this.state.loading = true;
     this.setState(this.state);
 
-    getApiResponse('/villa-user-management/getMessages', {
+    getApiResponse('/villa/getMessages', {
       _skip: this.state.skip,
       conversationId: this.props.data.id
     }, this.props.auth)
@@ -343,7 +343,7 @@ export default class Conversation extends React.Component {
 
         state.messages.push(this.createMessage(message, 'd'));
 
-        postApi('/villa-user-management/sendMessage', {
+        postApi('/villa/sendMessage', {
           text: value,
           conversationId: this.props.data.id,
           ...this.auth
@@ -429,7 +429,7 @@ export default class Conversation extends React.Component {
   }
 
   createBooking(messageId, accepted, parts) {
-    postApi('/villa-user-management/createBooking', {
+    postApi('/villa/createBooking', {
       ...this.props.auth,
       messageId,
       accepted,

@@ -1,7 +1,7 @@
 import React from "react";
-import Loader from "../../components/Loader.js";
-import AnonymousAnnouncement from "../../components/AnonymousAnnouncement.js";
-import Conversation from "../../components/Conversation.js";
+import Loader from "../../components/Loader";
+import AnonymousAnnouncement from "../../components/AnonymousAnnouncement";
+import Conversation from "../../components/Conversation";
 
 import { getApiResponse } from "../../libraries/requests";
 import { getCookie } from "../../libraries/cookies";
@@ -19,6 +19,13 @@ export async function getStaticProps() {
 class Messages extends React.Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      conversations: new Array(),
+      rooms: new Object(),
+      loading: true,
+      skip: 0
+    }
   }
 
   checkScroll(event, element) {
@@ -34,31 +41,36 @@ class Messages extends React.Component {
   }
 
   createConversations() {
-    this.state.loading = true;
-    this.setState(this.state);
-    let element = document.getElementsByClassName('conversations-content')[0];
+    this.setState((state, props) => {
+      let element = document.getElementsByClassName('conversations-content')[0];
 
-    getApiResponse('/villa-user-management/getConversations', {
-      _skip: this.state.skip
-    }, this.auth)
-      .then(data => {
-        let conversations = new Array();
+      getApiResponse('/villa/getConversations', {
+        _skip: this.state.skip
+      }, this.auth)
+        .then(data => {
+          let conversations = new Array();
 
-        for (let i = 0; i < data.length; i += 1) {
-          conversations.push({
-            key: this.state.skip + i,
-            data: data[i],
-            newMessages: new Array()
+          for (let i = 0; i < data.length; i += 1) {
+            conversations.push({
+              key: this.state.skip + i,
+              data: data[i],
+              newMessages: new Array()
+            });
+          }
+
+          this.setState((state, props) => {
+            state.conversations = state.conversations.concat(conversations);
+            state.skip += 10;
+            state.loading = false;
+
+            return state;
           });
-        }
+        }, e => console.log(e));
 
-        this.state.conversations =
-          this.state.conversations.concat(conversations);
-        this.state.skip += 10;
-        this.state.loading = false;
 
-        this.setState(this.state);
-      }, e => console.log(e));
+      state.loading = true;
+      return state;
+    });
   }
 
   assignRoom(key, value) {
@@ -130,7 +142,7 @@ class Messages extends React.Component {
             if (this.state.conversations[i].data.id === data.conversationId) return;
           }
 
-          getApiResponse('/villa-user-management/getConversations', {
+          getApiResponse('/villa/getConversations', {
             id: data.conversationId
           }, this.auth)
             .then(conversation => {
@@ -154,17 +166,10 @@ class Messages extends React.Component {
 
         this.props.socket.on('newMessage', this.newMessageHandler);
 
-        this.state = {
-          conversations: new Array(),
-          rooms: new Object(),
-          loading: true,
-          skip: 0
-        }
-
         this.checkScroll = this.checkScroll.bind(this);
         this.assignRoom = this.assignRoom.bind(this);
 
-        getApiResponse("/villa-user-management/getConversationsCount", {}, this.auth)
+        getApiResponse("/villa/getConversationsCount", {}, this.auth)
           .then(count => {
             count = parseInt(count);
 
