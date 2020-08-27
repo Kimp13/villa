@@ -1,0 +1,112 @@
+@import '../../foundation/variables';
+
+.rooms {
+  background: $lapis;
+  padding: 1rem 1rem 0;
+  color: white;
+  text-align: center;
+
+  &-header {
+    text-align: center;
+  }
+
+  &-content {
+    display: flex;
+    align-items: center;
+    counter-reset: node;
+
+    &-node {
+      counter-increment: node;
+      flex: 15rem 1 1;
+      margin: 1rem;
+      padding: .25rem .5rem;
+      border-width: .2rem;
+      border-style: solid;
+      border-color: rgba(white, .2);
+      transition: border-color .3s ease, transform .3s ease;
+      animation-duration: 1s;
+      animation-timing-function: ease;
+
+      &.chosen {
+        border-color: white;
+        transform: scale(1.05);
+      }
+
+      &:not(.chosen):hover {
+        border-color:rgba(white, .6);
+        cursor: pointer;
+      }
+
+      &-name,
+      &-header {
+        text-align: center;
+      }
+    }
+  }
+
+  .button {
+    display: inline-block;
+    font-family: defaultFont;
+    font-size: 1rem;
+    color: var(--color);
+    border-radius: 1rem;
+    border: .15rem solid var(--color);
+    padding: .25rem .75rem;
+    margin: .25rem .5rem;
+    transition: background-color .3s ease, color .3s ease;
+
+    &.back {
+      --color: #FF86c1;
+    }
+
+    &.next {
+      --color: #32cd32;
+    }
+
+    &.disabled {
+      opacity: .6;
+
+      &:hover {
+        cursor: not-allowed;
+      }
+    }
+
+    &:not(.disabled):hover {
+      cursor: pointer;
+      background-color: var(--color);
+      color: white;
+    }
+  }
+}
+
+@keyframes goDown {
+  from {
+    transform: translateY(-100vh);
+  } to {
+    transform: none;
+  }
+}
+
+@keyframes goLeft {
+  from {
+    transform: translateX(100vw);
+  } to {
+    transform: none;
+  }
+}
+
+@keyframes goUp {
+  from {
+    transform: translateY(100vh);
+  } to {
+    transform: none;
+  }
+}
+
+@keyframes goRight {
+  from {
+    transform: translateX(-100vw);
+  } to {
+    transform: none;
+  }
+}

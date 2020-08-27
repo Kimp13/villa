@@ -1,0 +1,89 @@
+@import '../foundation/index';
+
+.main {
+  &-adwords {
+    &-section {
+      padding: 1rem;
+
+      &:nth-child(2n) {
+        background: rgba(lightblue, .15);
+
+        .main-adwords-section-header,
+        .main-adwords-section-content-description {
+          text-align: right;
+        }
+      }
+
+      &:nth-child(2n + 1) {
+        color: white;
+        background: $lapis;
+
+        .main-adwords-section-header,
+        .main-adwords-section-content-description {
+          text-align: left;
+        }
+      }
+
+      .changing-background,
+      .no-changing-background {
+        height: 55vw;
+      }
+    }
+  }
+}
+
+@media all and (orientation: landscape) {
+  .main {
+    &-adwords {
+      &-section {
+        &:nth-child(2n) {
+          .main-adwords-section-content-description {
+            order: 2;
+          }
+
+          .main-adwords-section-content-images {
+            order: 1;
+          }
+        }
+
+        &-header {
+          margin: 0 1rem;
+        }
+
+        &-content {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+
+          &-description {
+            flex: 60% 1 1;
+            margin: 0 1rem;
+          }
+
+          &-images {
+            flex: 40% 1 1;
+            margin: 0 1rem;
+          }
+
+          .a {
+            color: white;
+
+            &:link,
+            &:visited,
+            &:hover,
+            &:active {
+              color: white;
+            }
+          }
+        }
+
+        .changing-background,
+        .no-changing-background {
+          height: 22vw;
+        }
+      }
+    }
+  }
+}
+
+@include changeOpacity;

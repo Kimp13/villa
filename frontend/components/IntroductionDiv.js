@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 
-import "../public/styles/components/introductionDiv.scss";
+import style from "../public/styles/components/introductionDiv.module.scss";
 
 import { getFullLink } from "../libraries/requests.js";
 
@@ -73,10 +73,10 @@ export default class IntroductionDiv extends React.Component {
         style={style}
       >
         <div className="introduction-content">
-          <h1>
+          <h1 className="introduction-content-header first">
             {this.props.content.name}
           </h1>
-          <h2>
+          <h2 className="introduction-content-header">
             {this.props.content.header}
           </h2>
           <div
@@ -91,14 +91,18 @@ export default class IntroductionDiv extends React.Component {
                 }}
               />
               <Link href="/phoneUs.js" as="/phoneUs">
-                <a style={{
-                  display: 'inline-block',
-                  marginLeft: '.3rem'
-                }}>
+                <a
+                  className="a"
+                  style={{
+                    display: 'inline-block',
+                    marginLeft: '.3rem',
+                    marginRight: '.3rem'
+                  }}
+                >
                   Просто позвоните нам
                 </a>
               </Link>
-              :
+              и забронируйте номер!
             </p>
             <div className="introduction-phone-link">
               <div className="introduction-phone-link-figure">
@@ -106,7 +110,10 @@ export default class IntroductionDiv extends React.Component {
                 <div className="introduction-phone-link-figure-circle" />
                 <i className="fas fa-phone" />
               </div>
-              <a href="tel:+79785025000">
+              <a
+                className="a"
+                href="tel:+79785025000"
+              >
                 +79785025000
               </a>
             </div>

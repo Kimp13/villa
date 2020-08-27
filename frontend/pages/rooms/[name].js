@@ -14,7 +14,7 @@ import IntroductionDiv from "../../components/IntroductionDiv";
 import ChooseDate from "../../components/ChooseDate";
 import Loader from "../../components/Loader";
 
-import "../../public/styles/pages/room.scss";
+import "../../public/styles/pages/room.module.scss";
 
 export async function getStaticPaths () {
   const rooms = await getApiResponse('/villa/getRooms', {_sort: 'id:asc'});
@@ -37,7 +37,8 @@ export async function getStaticProps ({ params }) {
   return {
     props: {
       room: room[0],
-      title: room[0].name
+      title: room[0].name,
+      footerEnabled: true
     }
   }
 }
@@ -220,8 +221,8 @@ class BookRoom extends React.Component {
       let price = this.countPrice(this.state.from, this.state.to);
       let head = (
             <tr key="0">
-              <th key="0">Количество<br/>гостей</th>
-              <th key="1">Цена</th>
+              <th className="tc th" key="0">Количество<br/>гостей</th>
+              <th className="tc th" key="1">Цена</th>
             </tr>
           ),
           body = new Array();
@@ -229,8 +230,8 @@ class BookRoom extends React.Component {
       for (let i = 0; i < price.length; i += 1) {
         body.push(
           <tr key={i + 1}>
-            <td key="0">{i + 1}</td>
-            <td key="1">{price[i]}</td>
+            <td className="tc td" key="0">{i + 1}</td>
+            <td className="tc td" key="1">{price[i]}</td>
           </tr>
         );
       }
@@ -248,7 +249,7 @@ class BookRoom extends React.Component {
     } else {
       return (
         <p className="room-prices-null">
-          Выберите дату своего проживания, чтобы узнать итоговую цену.
+          Выберите дату проживания, чтобы узнать итоговую цену.
         </p>
       );
     }
@@ -326,31 +327,19 @@ class BookRoom extends React.Component {
             to={this.props.to}
             setData={this.getData}
           />
-          {
-            this.state.from && this.state.to ?
-            <input
-              type="submit"
-              className="date-submit"
-              value="Забронировать"
-              onClick={this.book}
-            /> : null
-          }
         </form>
       );
     }
 
     return (
       <div className="content-flex-wrapper">
+        <h2 className="header">
+          Узнать цены
+        </h2>
         <div className="book-room">
-          <h2>
-            Забронировать
-          </h2>
           {component}
         </div>
         <div className="room-prices">
-          <h2>
-            Цены
-          </h2>
           {this.createPrices()}
         </div>
       </div>
@@ -614,6 +603,12 @@ class AdminRoomPanel extends React.Component {
   }
 
   createDay(options, inner, bookings = false) {
+    if (options.className) {
+      options.className = "day-brick " + options.className;
+    } else {
+      options.className = "day-brick";
+    }
+
     inner = Number(inner) || inner;
 
     let indicators = new Array();
@@ -887,15 +882,16 @@ class AdminRoomPanel extends React.Component {
     for (i = 0; i < prices.length; i += 1) {
       prices[i] = (
         <div key={i} className="admin-room-panel-prices-field">
-          <span className="label" onClick={this.labelFunction}>
+          <span className="inner label" onClick={this.labelFunction}>
             {`${i + 1} человек:`}
           </span>
           <input
+            className="inner input"
             value={prices[i]}
             onChange={this.filterInput}
             maxLength="5"
           />
-          <span>
+          <span className="inner">
             ₽
           </span>
         </div>
@@ -937,7 +933,7 @@ class AdminRoomPanel extends React.Component {
         </div>
         <div className="admin-room-panel-prices">
           <button
-            className="admin-room-panel-prices-multiple"
+            className="button admin-room-panel-prices-multiple"
             onClick={this.toggleMultiple}
           >
             {
@@ -946,11 +942,11 @@ class AdminRoomPanel extends React.Component {
                 "Включить режим множественного выбора"
             }
           </button> 
-          <form>
+          <form className="form">
             {prices}
             <button
               className={
-                "admin-room-panel-prices-reset" + (this.state.pricesSet ?
+                "button admin-room-panel-prices-reset" + (this.state.pricesSet ?
                   "" : " disabled"
                 )
               }
@@ -961,7 +957,7 @@ class AdminRoomPanel extends React.Component {
             </button>
             <button
               className={
-                "admin-room-panel-prices-submit" + (this.state.pricesSet ?
+                "button admin-room-panel-prices-submit" + (this.state.pricesSet ?
                   "" : " disabled"
                 )
               }

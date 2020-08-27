@@ -4,7 +4,7 @@ import {
   dateSmaller
 } from "../libraries/dates";
 
-import "../public/styles/components/chooseDate.scss";
+import "../public/styles/components/chooseDate.module.scss";
 
 export default class extends React.Component {
   constructor(props) {
@@ -613,9 +613,21 @@ class Calendar extends React.Component {
       }
     }
     if (from.year === to.year) {
-      controlPanelHeader = <p>{this.state.currentYear}</p>;
+      controlPanelHeader = (
+        <p className="calendar-control-panel-paragraph">
+          {this.state.currentYear}
+        </p>
+      );
     } else {
-      controlPanelHeader = <button type="button" className="calendar-control-panel-choose-year" onClick={this.showYearPanel}>{this.state.currentYear}</button>;
+      controlPanelHeader = (
+        <button
+          type="button"
+          className="calendar-control-panel-choose-year"
+          onClick={this.showYearPanel}
+        >
+          {this.state.currentYear}
+        </button>
+      );
     }
     if (firstMonth) {
       firstButtonClassName += ' disabled';
@@ -699,7 +711,13 @@ class Calendar extends React.Component {
         }
         for (i; i < lastDay; i += 1) {
           dayBricks.push(
-            <div key={i} className="day-brick available" onClick={this.chooseSecondDay} onMouseEnter={this.highlightChoices} onMouseLeave={this.unhighlightChoices}>
+            <div
+              key={i}
+              className="day-brick available"
+              onClick={this.chooseSecondDay}
+              onMouseEnter={this.highlightChoices}
+              onMouseLeave={this.unhighlightChoices}
+            >
               {i + 1}
             </div>
           );
@@ -763,22 +781,38 @@ class Calendar extends React.Component {
     return (
       <div className="calendar" style={style}>
         <div className="calendar-control-panel">
-          <button type="button" className="calendar-control-panel-info" onClick={this.toggleInfo}>
+          <button
+            type="button"
+            className="calendar-control-panel-info"
+            onClick={this.toggleInfo}
+          >
             <i className="far fa-question-circle" />
           </button>
           {controlPanelHeader}
-          <button type="button" className="calendar-control-panel-close" onClick={this.props.parentClass.showCalendar}>
+          <button
+            type="button"
+            className="calendar-control-panel-close"
+            onClick={this.props.parentClass.showCalendar}
+          >
             <i className="far fa-times-circle" />
           </button>
         </div>
         <div className="calendar-header">
-          <button type="button" className={firstButtonClassName} onClick={this.switchMonth}>
+          <button
+            type="button"
+            className={firstButtonClassName}
+            onClick={this.switchMonth}
+          >
             <i className="fas fa-caret-left" />
           </button>
           <h3 className="calendar-header-header">
             {this.props.convertNumberToMonth[this.state.currentMonth - 1]}
           </h3>
-          <button type="button" className={secondButtonClassName} onClick={this.switchMonth}>
+          <button
+            type="button"
+            className={secondButtonClassName}
+            onClick={this.switchMonth}
+          >
             <i className="fas fa-caret-right" />
           </button>
         </div>
@@ -790,30 +824,31 @@ class Calendar extends React.Component {
             <div className="day-brick available">
               5
             </div>
-            <p>
+            <p className="calendar-info-day-bricks-paragraph">
               Доступно
             </p>
             <div className="day-brick booked">
               2
             </div>
-            <p>
+            <p className="calendar-info-day-bricks-paragraph">
               Занято
             </p>
             <div className="day-brick unavailable">
               13
             </div>
-            <p>
+            <p className="calendar-info-day-bricks-paragraph">
               Недоступно
             </p>
             <div className="day-brick other-month">
               27
             </div>
-            <p>
+            <p className="calendar-info-day-bricks-paragraph">
               Другой месяц
             </p>
           </div>
-          <p>
-            Обратите внимание, что календарь синхронизирован с серверным временем (МСК), так что возможны расхождения дат с локальным временем.
+          <p className="calendar-info-paragraph">
+            Обратите внимание, что календарь синхронизирован с серверным временем (МСК), 
+            так что возможны расхождения дат с локальным временем.
           </p>
         </div>
       </div>

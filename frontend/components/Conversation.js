@@ -6,7 +6,7 @@ import ChooseDate from "./ChooseDate";
 import { shortenTextTo } from "../libraries/texts.js";
 import { getApiResponse, postApi } from "../libraries/requests.js";
 
-import "../public/styles/components/conversation.scss";
+import "../public/styles/components/conversation.module.scss";
 
 function RejectConfirmation(props) {
   function makeDateString(date) {
@@ -527,8 +527,9 @@ export default class Conversation extends React.Component {
         elementClassName = 'pending';
         if (this.props.socket.user.isRoot) {
           footer = (
-            <div className="conversation-content-message-footer">
+            <div className="booking-footer">
               <button
+                className="booking-footer-button"
                 onClick={
                   () => this.closeBooking(key, data, parts)
                 }
@@ -536,6 +537,7 @@ export default class Conversation extends React.Component {
                 Закрыть
               </button>
               <button
+                className="booking-footer-button"
                 onClick={
                   () => this.acceptBooking(key, data, parts)
                 }
@@ -553,17 +555,17 @@ export default class Conversation extends React.Component {
           data-author-id={data.authorId}
           key={key}
         >
-          <div className={elementClassName}>
+          <div className={"booking-header " + elementClassName}>
             {newText}
           </div>
-          <div>
-            <p>
+          <div className="booking-main">
+            <p className="booking-main-paragraph">
               {paragraphText}
             </p>
-            <p>
+            <p className="booking-main-paragraph">
               {`Заезд: ${parts[1]}`}
             </p>
-            <p>
+            <p className="booking-main-paragraph">
               {`Отъезд: ${parts[2]}`}
             </p>
           </div>
@@ -689,7 +691,10 @@ export default class Conversation extends React.Component {
               (participantsIds.length > 2 ? 'Чат с: ' : '') +
                 shortenTextTo(conversationName, 256)
             }
-            <button className="opened" onClick={this.toggle}>
+            <button
+              className="conversation-header-button opened"
+              onClick={this.toggle}
+            >
               <i className="fas fa-times"/>
             </button>
           </h3>

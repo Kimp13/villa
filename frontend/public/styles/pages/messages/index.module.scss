@@ -4,6 +4,7 @@
   width: 100vw;
   height: 100vh;
   padding-top: 2.25rem;
+
   &-header {
     position: fixed;
     top: 0;
@@ -16,12 +17,14 @@
     color: $lapis;
     box-shadow: 0 0 .33rem $lapis;
   }
+
   &-content {
     max-height: 100%;
     overflow: auto;
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
+    
     &-null {
       padding: 1rem 0 0;
       color: gray;

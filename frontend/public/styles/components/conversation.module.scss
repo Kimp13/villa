@@ -19,7 +19,8 @@
     box-shadow: 0 0 .1rem gray;
     text-align: right;
 
-    button {
+    &-close,
+    &-content-button {
       &:active {
         transform: scale(.9);
       }
@@ -32,12 +33,14 @@
       width: 1.5rem;
       height: 1.5rem;
       font-size: 1.5rem;
-      svg {
-        width: 100%;
-        height: 100%;
-      }
+
       &:hover {
         cursor: pointer;
+      }
+
+      .svg-inline--fa {
+        width: 100%;
+        height: 100%;
       }
     }
 
@@ -57,15 +60,15 @@
         transition: color .3s ease, background-color .3s ease;
 
         &.no {
-          --color: #ff3500;
+          --color: $errorred;
         }
 
         &.maybe {
-          --color: #cc8800;
+          --color: $yellowbus;
         }
 
         &.yes {
-          --color: #32cd32;
+          --color: $green;
         }
 
         &:hover {
@@ -112,9 +115,12 @@
     .conversation-send {
       display: flex;
       width: 100%;
-      & > * {
+
+      &-textarea,
+      &-submit {
         margin: .5rem;
       }
+
       &-textarea {
         flex: 1;
         resize: none;
@@ -130,15 +136,17 @@
         max-height: 8rem;
         transition: height .3s ease;
       }
+
       &-submit {
-        svg {
+        &:hover {
+          cursor: pointer;
+        }
+
+        .svg-inline--fa {
           color: $lapis;
           width: 1.5rem;
           height: 1.5rem;
           font-size: 1.5rem;
-        }
-        &:hover {
-          cursor: pointer;
         }
       }
     }
@@ -178,70 +186,72 @@
         width: 20rem;
         max-width: 100%;
         background: #3692;
-        div {
-          &:first-child {
+
+        .booking-header {
+          padding: .25rem .5rem;
+          text-align: center;
+          color: white;
+
+          &.pending {
+            background: $yellowbus;
+          }
+
+          &.accepted {
+            background: $green;
+          }
+
+          &.rejected {
+            background: $errorred;
+          }
+        }
+
+        .booking-main {
+          &-paragraph {
+            margin: .5rem;
+          }
+        }
+
+        .booking-footer {
+          display: flex;
+          justify-content: center;
+
+          &-button {
+            margin: .5rem;
+            font-size: 1rem;
+            font-family: inherit;
             padding: .25rem .5rem;
-            text-align: center;
-            color: white;
+            border-width: .1rem;
+            border-style: solid;
+            border-radius: .5rem;
 
-            &.pending {
-              background: #cc8800;
-            }
+            &:first-child {
+              border-color: $errorred;
+              color: $errorred;
+              transition: background-color .3s ease, color .3s ease;
 
-            &.accepted {
-              background: #32cd32;
-            }
-
-            &.rejected {
-              background: #ff3500;
-            }
-          }
-
-          &:nth-child(2) {
-            & > * {
-              margin: .5rem;
-            }
-          }
-
-          &:nth-child(3) {
-            display: flex;
-            justify-content: center;
-            & > * {
-              margin: .5rem;
-              font-size: 1rem;
-              font-family: inherit;
-              padding: .25rem .5rem;
-              border-width: .1rem;
-              border-style: solid;
-              border-radius: .5rem;
-
-              &:first-child {
-                border-color: #ff3500;
-                color: #ff3500;
-                transition: background-color .3s ease, color .3s ease;
-                &:hover {
-                  cursor: pointer;
-                  color: white;
-                  background-color: #ff3500;
-                }
+              &:hover {
+                cursor: pointer;
+                color: white;
+                background-color: $errorred;
               }
+            }
 
-              &:last-child {
-                border-color: #32cd32;
-                color: #32cd32;
-                transition: background-color .3s ease, color .3s ease;
-                &:hover {
-                  cursor: pointer;
-                  color: white;
-                  background-color: #32cd32;
-                }
+            &:last-child {
+              border-color: $green;
+              color: $green;
+              transition: background-color .3s ease, color .3s ease;
+
+              &:hover {
+                cursor: pointer;
+                color: white;
+                background-color: $green;
               }
             }
           }
         }
       }
 
-      svg {
+      .svg-inline--fa {
         margin-left: .4rem;
       }
     }
@@ -256,15 +266,18 @@
     width: 100%;
     height: 2rem;
     padding: 0 .5rem 0 2rem;
-    button {
+
+    &-button {
       width: 1.5rem;
       font-size: 1.5rem;
       color: white;
       transform: translateX(120%);
       transition: transform .3s ease;
+
       &:hover {
         cursor: pointer;
       }
+
       &.opened {
         transform: none;
       }
@@ -275,29 +288,33 @@
     display: flex;
     align-items: center;
     height: 4rem;
+
     &-message {
       flex: 1;
       padding: 0 0 0 1rem;
       color: $lightblue;
       overflow: auto;
+
       &-author {
         display: inline-block;
         margin-right: .4em;
         color: $lapis;
       }
+
       &-booking {
         &.pending {
-          color: #cc8800;
+          color: $yellowbus;
         }
 
         &.accepted {
-          color: #32cd32;
+          color: $green;
         }
 
         &.rejected {
-          color: #ff3500;
+          color: $errorred;
         }
       }
+
       &-null {
         color: grey;
       }
@@ -313,5 +330,4 @@
       color: white;
     }
   }
-
 }

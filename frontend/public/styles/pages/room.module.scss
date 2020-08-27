@@ -17,7 +17,8 @@
       justify-content: space-between;
       align-items: center;
       color: $lapis;
-      button {
+
+      &-button {
         height: 2rem;
         width: 14.28%;
         font-size: 1.8rem;
@@ -44,7 +45,7 @@
           background: $lapis;
         }
 
-        svg {
+        .svg-inline--fa {
           width: 1.4rem;
           height: 100%;
         }
@@ -54,7 +55,7 @@
     &-content {
       font-size: 0;
 
-      & > div {
+      .day-brick {
         position: relative;
         display: inline-block;
         font-size: 1rem;
@@ -111,7 +112,7 @@
   &-prices {
     text-align: right;
 
-    button {
+    .button {
       font-size: 1rem;
       font-family: defaultFont;
       color: var(--color);
@@ -151,18 +152,19 @@
       text-align: left;
       margin: .25rem 0;
 
-      & > * {
+      .inner {
         font-size: 1.25rem;
       }
 
       .label {
         flex: 1;
+
         &:hover {
           cursor: default;
         }
       }
 
-      input {
+      .input {
         border-bottom: .1rem solid $lapis;
         color: $lapis;
         font-family: defaultFont;
@@ -186,79 +188,87 @@
   }
 }
 
-.book-room {
-  flex: 500px 1;
+.content-flex-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 0 1rem 0;
 
-  h2 {
+  .header {
+    flex: 100% 1 1;
     text-align: center;
+    margin: 1rem 0;
   }
 
-  &-error {
-    text-align: center;
-    margin: .5rem 0;
-    font-size: 1.1rem;
-    color: $errorred;
-  }
+  .book-room {
+    flex: 700px 1;
 
-  form {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    
-    .date-submit, .input-date {
-      border: .2rem solid $lapis;
-      border-radius: 1rem;
-      padding: 0 .5rem;
-      margin: .5rem;
+    &-error {
+      text-align: center;
+      margin: .5rem 0;
+      font-size: 1.1rem;
+      color: $errorred;
     }
 
-    .date-submit {
-      font-size: 1rem;
-      font-family: inherit;
-      color: $lapis;
-      transition: all .3s ease;
+    .flex-book-form {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      
+      .date-submit, .input-date {
+        border: .2rem solid $lapis;
+        border-radius: 1rem;
+        padding: 0 .5rem;
+        margin: .5rem;
+      }
 
-      &:hover {
-        cursor: pointer;
-        background: $lapis;
-        color: white;
+      .date-submit {
+        font-size: 1rem;
+        font-family: inherit;
+        color: $lapis;
+        transition: all .3s ease;
+
+        &:hover {
+          cursor: pointer;
+          background: $lapis;
+          color: white;
+        }
       }
     }
   }
-}
 
-.room-prices {
-  flex: 250px 1;
+  .room-prices {
+    flex: 350px 1;
 
-  h2 {
-    text-align: center;
-  }
-
-  &-null {
-    text-align: center;
-    color: gray;
-    padding: .25rem 1rem;
-  }
-
-  &-table {
-    margin: 0 auto;
-    border-collapse: collapse;
-
-    th, td {
-      padding: .25rem .5rem;
+    &-header {
       text-align: center;
-      vertical-align: middle;
-      border: .2rem solid $lapis;
     }
 
-    th {
-      background: $lapis;
-      color: white;
+    &-null {
+      text-align: center;
+      color: gray;
+      padding: .25rem 1rem;
     }
 
-    td {
-      &:last-child::after {
-        content: ' ₽';
+    &-table {
+      margin: 0 auto;
+      border-collapse: collapse;
+
+      .tc {
+        padding: .25rem .5rem;
+        text-align: center;
+        vertical-align: middle;
+        border: .2rem solid $lapis;
+      }
+
+      .th {
+        background: $lapis;
+        color: white;
+      }
+
+      .td {
+        &:last-child::after {
+          content: ' ₽';
+        }
       }
     }
   }

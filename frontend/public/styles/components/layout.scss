@@ -33,7 +33,7 @@ html {
 
 /* --------------------------------------------------------------------------------------- */
 /* --------------------------------------------------------------------------------------- */
-/* ------------------------------ SLIDEOUT.JS STYLES ------------------------------------- */
+/* ------------------------------ SLIDEOUT.JS STYLES START ------------------------------- */
 body {
   width: 100%;
   height: 100%;
@@ -81,15 +81,21 @@ body {
 /* --------------------------------------------------------------------------------------- */
 
 .big {
-  font-size: 1.5rem;
+  font-size: 1.5em;
 }
 
 .humiliated {
-  font-size: .5rem;
+  font-size: .5em;
 }
 
 .invisible {
   opacity: 0;
+}
+
+.a {
+  &:hover {
+    text-decoration: none;
+  }
 }
 
 svg {
@@ -103,21 +109,24 @@ svg {
   position: fixed;
   top: 0;
   left: 0;
-  width: 6rem;
-  height: 2rem;
-  padding: .2rem 0;
+  width: 7rem;
+  height: 2.2rem;
+  padding: .3rem .5rem;
   z-index: 2;
   display: flex;
   flex-direction: column;
   justify-content: space-around;
   align-items: center;
   flex-wrap: wrap;
-  background-color: white;
   transition: width .3s ease;
   overflow: hidden;
+  border-radius: 0 0 1rem 0;
+  background-color: white;
+  box-shadow: 0 0 .33rem $lapis;
+  font-size: 1.25rem;
 
   &.opened {
-    width: 2rem;
+    width: 2.9rem;
 
     .aside-toggle-bar {
       &:nth-child(1) {
@@ -147,7 +156,7 @@ svg {
 
     &:nth-child(1) {
       transition: transform .3s ease;
-      transform-origin: 0 90%;
+      transform-origin: 0 50%;
     }
 
     &:nth-child(2) {
@@ -156,14 +165,13 @@ svg {
 
     &:nth-child(3) {
       transition: transform .3s ease;
-      transform-origin: 0 10%;
+      transform-origin: 0 50%;
     }
   }
 
   &-caption {
     flex: 100% 1 1;
     width: 4rem;
-    font-size: 1.25rem;
     font-family: defaultFont;
     color: $lapis;
   }
@@ -171,6 +179,8 @@ svg {
 
 aside {
   nav {
+    font-size: 1.4rem;
+
     a {
       text-decoration: none;
       text-align: center;
@@ -204,7 +214,8 @@ aside {
 
     .aside-logo {
       color: inherit;
-      height: 7rem;
+      width: 100%;
+      height: 7em;
       margin: 0 1rem 0 0;
 
       * {
@@ -221,12 +232,14 @@ aside {
       &-main {
         display: inline-block;
         font-family: handwritingFont;
-        font-size: 450%;
+        font-size: 4.5em;
         height: 70%;
+        transform: translateX(-.5rem);
       }
 
       p {
         text-align: center;
+        font-size: 1em;
         height: 30%;
       }
 
@@ -241,6 +254,47 @@ footer {
   background-color: $lapis;
   color: white;
   overflow: hidden;
+
+  .footer-logo {
+    font-size: 4rem;
+    text-align: center;
+    font-family: handwritingFont;
+    margin: .25em 0 0 -.25em;
+  }
+
+  .footer-adwords {
+    &-paragraph {
+      text-align: center;
+
+      .a {
+        display: inline-block;
+        font-size: 1.25em;
+        margin: .25rem 1rem;
+        color: white;
+
+        &:link,
+        &:visited,
+        &:hover,
+        &:active {
+          color: white;
+        }
+
+        .svg-inline--fa {
+          width: 1.125em;
+          height: 1.125em;
+          font-size: 1.125em;
+          vertical-align: middle;
+          margin-right: .3rem;
+
+          &.fa-phone {
+            width: 1em;
+            height: 1em;
+            font-size: 1em;
+          }
+        }
+      }
+    }
+  }
   
   .footer-waves {
     position: relative;
@@ -288,5 +342,9 @@ footer {
 @media all and (orientation: landscape) {
   html {
     font-size: calc(1vw + 1vh);
+  }
+
+  aside nav {
+    font-size: 1rem;
   }
 }

@@ -13,3 +13,17 @@
     height: 100%;
   }
 }
+
+@mixin changeOpacity {
+  @keyframes changeOpacity {
+    from {
+      opacity: 0;
+    } 10% {
+      opacity: 1;
+    } 90% {
+      opacity: 1;
+    } to {
+      opacity: 0;
+    }
+  }
+}

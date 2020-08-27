@@ -36,6 +36,7 @@ class Welcome extends React.Component {
       [
         {
           element: <input
+                     className="input"
                      name="phoneNumber"
                      type="tel" key={0}
                      placeholder="Номер телефона"
@@ -54,7 +55,15 @@ class Welcome extends React.Component {
       ],
       [
         {
-          element: <input name="name" type="text" key={0} placeholder="Имя" />,
+          element: (
+            <input
+              className="input"
+              name="name"
+              type="text"
+              key={0}
+              placeholder="Имя"
+            />
+          ),
           checkFunction: value => (/[^А-яёЁ]/.test(value) ? {
               valid: false,
               message: 'Имя может состоять только из русских букв.'
@@ -63,7 +72,15 @@ class Welcome extends React.Component {
             })
         },
         {
-          element: <input name="surname" type="text" key={1} placeholder="Фамилия" />,
+          element: (
+            <input
+              className="input"
+              name="surname"
+              type="text"
+              key={1}
+              placeholder="Фамилия"
+            />
+          ),
           checkFunction: value => (/[^А-яёЁ]/.test(value) ? {
               valid: false,
               message: 'Фамилия может состоять только из русских букв.'
@@ -247,7 +264,7 @@ class Welcome extends React.Component {
         }
         forms.push(
           <form className="welcome-form left" key={i}>
-            <p>{this.headers[i]}</p>
+            <p className="p">{this.headers[i]}</p>
             {fields}
           </form>
         );
@@ -258,7 +275,7 @@ class Welcome extends React.Component {
       }
       forms.push(
         <form className="welcome-form" key={i}>
-          <p>{this.headers[i++]}</p>
+          <p className="p">{this.headers[i++]}</p>
           {fields}
         </form>
       );
@@ -269,7 +286,7 @@ class Welcome extends React.Component {
         }
         forms.push(
           <form className="welcome-form right" key={i}>
-            <p>{this.headers[i++]}</p>
+            <p className="p">{this.headers[i++]}</p>
             {fields}
           </form>
         );

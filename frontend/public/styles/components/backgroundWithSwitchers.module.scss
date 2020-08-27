@@ -15,14 +15,17 @@
   background: white;
   opacity: .6;
   transition: all .3s ease;
+
   &:hover {
     cursor: pointer;
     opacity: 1;
   }
+
   &.left {
     left: 0;
     padding-right: .5rem;
   }
+
   &.right {
     right: 0;
     padding-left: .5rem;
@@ -35,6 +38,7 @@
   left: 0;
   top: 0;
   height: 100%;
+  
   .bg-image {
     height: 100%;
     width: auto;

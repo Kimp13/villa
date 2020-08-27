@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 
-import "../public/styles/components/anonymousAnnouncement.scss";
+import "../public/styles/components/anonymousAnnouncement.module.scss";
 
 export default props => {
   let [closed, close] = useState(false);
@@ -9,7 +9,7 @@ export default props => {
   if (props.user.isAnonymous && !(closed || window.sessionStorage.getItem("aac"))) {
     return (
       <div className="anonymous-announcement">
-        <p>
+        <p className="anonymous-announcement-paragraph">
           Обращаем Ваше внимание, что Вы зарегистрированы как анонимный пользователь.
           Анонимный пользователь не имеет средства входа в аккаунт и не может
           восстановить данные при смене устройства или браузера. Вы можете
@@ -18,10 +18,13 @@ export default props => {
           здесь.
           </a></Link>
         </p>
-        <button onClick={() => {
-          window.sessionStorage.setItem("aac", true);
-          close(true);
-        }}>
+        <button
+          className="anonymous-announcement-button"
+          onClick={() => {
+            window.sessionStorage.setItem("aac", true);
+            close(true);
+          }}
+        >
           <i className="fas fa-times" />
         </button>
       </div>

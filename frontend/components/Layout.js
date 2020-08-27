@@ -16,7 +16,7 @@ export default class extends React.Component {
     const Slideout = require('slideout');
 
     let slideout = new Slideout({
-      panel: document.getElementById('main-content'),
+      panel: document.getElementsByClassName('main-content')[0],
       menu: document.getElementsByTagName('aside')[0],
       padding: 256,
       tolerance: 70
@@ -72,7 +72,7 @@ export default class extends React.Component {
           opened={this.state.asideOpened}
           slideout={this.state.slideout}
         />
-        <div id="main-content">
+        <div className="main-content">
           {child}
           {footer}
         </div>
@@ -115,7 +115,7 @@ class Aside extends React.Component {
         firstLinks.push(
           <Link href="/auth?type=signin" as="/auth" key={'a'}>
             <a className="underlined" onClick={this.handleButtonClick}>
-              <i className="fas fa-user-check" />Вход / Регистрация
+              <i className="fas fa-user-check" />Вход
             </a>
           </Link>
         );
@@ -146,7 +146,7 @@ class Aside extends React.Component {
                     B
                   </span>
                   <p className="big">
-                    Вилла
+                    На главную
                   </p>
               </a>
             </Link>
@@ -171,7 +171,28 @@ function Footer () {
   let linkRegExp = /(https?:\/\/)?\w+\.[a-z]{2,}(\/(\w|%[\dA-F]{2})*)*/g;
   return (
     <footer>
-      Вилла
+      <p className="footer-logo">
+        Villa
+      </p>
+      <div className="footer-adwords">
+        <p className="footer-adwords-paragraph">
+          Заинтересовались и хотите забронировать номер?
+        </p>
+        <p className="footer-adwords-paragraph">
+          Позвоните или напишите на один из этих номеров:
+        </p>
+        <p className="footer-adwords-paragraph">
+          <a className="a" target="_blank" href="tel:+79785025000">
+            <i className="fas fa-phone" />+79785025000
+          </a>
+          <a className="a" target="_blank" href="https://api.whatsapp.com/send?phone=79534081000">
+            <i className="fab fa-whatsapp" />+79534081000
+          </a>
+          <a className="a" target="_blank" href="viber://chat/?number=%2B79534081000">
+            <i className="fab fa-viber" />+79534081000
+          </a>
+        </p>
+      </div>
       <div className="footer-waves">
         <div className="wave" />
         <div className="wave" />

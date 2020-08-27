@@ -307,24 +307,32 @@ export default class Auth extends React.Component {
             </Head>
             <div className="authorization">
               <div
-                className={"form-switcher" + (this.state.isSignin ? ' active' : '')}
+                className={
+                  "authorization-content form-switcher" +
+                  (this.state.isSignin ? ' active' : '')
+                }
                 onClick={this.state.isSignin ? null : this.switchForm}
               >
                 Вход
               </div>
               <div
-                className={"form-switcher" + (this.state.isSignin ? '' : ' active')}
+                className={
+                  "authorization-content form-switcher" + 
+                  (this.state.isSignin ? '' : ' active')
+                }
                 onClick={this.state.isSignin ? this.switchForm : null}
               >
                 Регистрация
               </div>
               <div className={
-                "form-switcher-underline" + (this.state.isSignin ? '' : ' right')
-              } />
+                "authorization-content form-switcher-underline" + 
+                (this.state.isSignin ? '' : ' right')
+              } 
+              />
               <div className="authorization-main">
-                <form>
+                <form className="form">
                   <input
-                    className="keyboard-input"
+                    className="keyboard-input input"
                     type="text"
                     name="username"
                     maxLength="64"
@@ -332,15 +340,16 @@ export default class Auth extends React.Component {
                     autoComplete="username"
                   />
                   <input
-                    className="keyboard-input"
+                    className="keyboard-input input"
                     type="password"
                     name="password"
                     maxLength="128"
                     placeholder="Пароль"
                     autoComplete="current-password"
                   />
-                  <label htmlFor="saveuser-checkbox">
+                  <label className="label" htmlFor="saveuser-checkbox">
                     <input
+                      className="input"
                       type="checkbox"
                       name="saveuser"
                       id="saveuser-checkbox"
@@ -351,11 +360,11 @@ export default class Auth extends React.Component {
                     </div>
                     Запомнить меня
                   </label>
-                  <input type="submit" value="Вход" onClick={this.signIn} />
+                  <input className="submit input" value="Вход" onClick={this.signIn} />
                 </form>
-                <form>
+                <form className="form">
                   <input
-                    className="keyboard-input"
+                    className="keyboard-input input"
                     type="text"
                     name="name"
                     maxLength="64"
@@ -363,7 +372,7 @@ export default class Auth extends React.Component {
                     autoComplete="name"
                   />
                   <input
-                    className="keyboard-input"
+                    className="keyboard-input input"
                     type="text"
                     name="surname"
                     maxLength="128"
@@ -371,17 +380,17 @@ export default class Auth extends React.Component {
                     autoComplete="name"
                   />
                   <input
-                    type="submit"
+                    className="submit input"
                     value="Продолжить"
                     onClick={this.startRegistration}
                   />
                 </form>
-                <form className="right">
-                  <button type="button" onClick={this.endRegistration}>
+                <form className="right form">
+                  <button className="button" type="button" onClick={this.endRegistration}>
                     <i className="fas fa-arrow-left" />
                   </button>
                   <input
-                    className="keyboard-input"
+                    className="keyboard-input input"
                     type="text"
                     name="email"
                     maxLength="256"
@@ -389,7 +398,7 @@ export default class Auth extends React.Component {
                     autoComplete="email"
                   />
                   <input
-                    className="keyboard-input"
+                    className="keyboard-input input"
                     type="text"
                     name="username"
                     maxLength="64"
@@ -397,7 +406,7 @@ export default class Auth extends React.Component {
                     autoComplete="username"
                   />
                   <input
-                    className="keyboard-input"
+                    className="keyboard-input input"
                     type="password"
                     name="password"
                     maxLength="128"
@@ -405,7 +414,7 @@ export default class Auth extends React.Component {
                     autoComplete="new-password"
                   />
                   <input
-                    className="keyboard-input"
+                    className="keyboard-input input"
                     type="password"
                     name="password-repeat"
                     maxLength="128"
@@ -413,7 +422,7 @@ export default class Auth extends React.Component {
                     autoComplete="new-password"
                   />
                   <input
-                    type="submit"
+                    className="submit input"
                     value="Зарегистрироваться"
                     onClick={this.signUp}
                   />
