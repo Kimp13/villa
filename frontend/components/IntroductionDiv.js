@@ -9,8 +9,10 @@ export default class IntroductionDiv extends React.Component {
   constructor(props) {
     super(props);
 
+    this.introduction = React.createRef();
+
     this.componentDidMount = () => {
-      setInterval(this.incrementIndex, 5000);
+      this.introduction.current.addEventListener('animationiteration', this.incrementIndex);
 
       let phoneUs;
 
@@ -32,16 +34,18 @@ export default class IntroductionDiv extends React.Component {
       }));
     };
 
-    this.incrementIndex = () => {
-      this.setState((state, props) => {
-        if (state.backgroundIndex + 1 === props.content.images.length) {
-          state.backgroundIndex = 0;
-        } else {
-          state.backgroundIndex += 1;
-        }
+    this.incrementIndex = e => {
+      if (e.target.isSameNode(this.introduction.current)) {
+        this.setState((state, props) => {
+          if (state.backgroundIndex + 1 === props.content.images.length) {
+            state.backgroundIndex = 0;
+          } else {
+            state.backgroundIndex += 1;
+          }
 
-        return state;
-      });
+          return state;
+        });
+      }
     }
   }
 
@@ -71,6 +75,7 @@ export default class IntroductionDiv extends React.Component {
       <div
         className="introduction"
         style={style}
+        ref={this.introduction}
       >
         <div className="introduction-content">
           <h1 className="introduction-content-header first">

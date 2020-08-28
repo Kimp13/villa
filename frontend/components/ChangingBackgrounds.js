@@ -21,6 +21,8 @@ export default class extends React.Component {
 
     if (this.props.backgrounds.length === 1) {
       noMovements = true;
+    } else {
+      this.element = React.createRef();
     }
 
     this.state = {
@@ -32,30 +34,36 @@ export default class extends React.Component {
     };
 
     this.componentDidMount = () => {
+      if (this.element) {
+        this.element.current.addEventListener('animationiteration', e => {
+          if (e.target.isSameNode(this.element.current)) {
+            console.log(e);
+
+            this.setState((state, props) => {
+              state.previousIndex = state.currentIndex;
+
+              if (state.currentIndex + 1 === state.backgrounds.length) {
+                state.currentIndex = 0;
+              } else {
+                state.currentIndex += 1;
+              }
+
+              if (props.captionRef) {
+                props.captionRef.current.innerHTML =
+                  state.backgrounds[state.currentIndex].caption || '';
+              }
+
+              return state;
+            });
+          }
+        })
+      }
+
       if (this.props.captionRef && this.props.captionRef.current) {
         this.props.captionRef.current.innerHTML =
           this.state.backgrounds[this.state.currentIndex].caption || '';
       }
     };
-
-    setInterval(() => {
-      this.setState((state, props) => {
-        state.previousIndex = state.currentIndex;
-
-        if (state.currentIndex + 1 === state.backgrounds.length) {
-          state.currentIndex = 0;
-        } else {
-          state.currentIndex += 1;
-        }
-
-        if (props.captionRef) {
-          props.captionRef.current.innerHTML =
-            state.backgrounds[state.currentIndex].caption || '';
-        }
-
-        return state;
-      });
-    }, this.state.delay);
   }
 
   render() {
@@ -110,6 +118,7 @@ export default class extends React.Component {
             '--background-size': backgroundSize,
             '--hover-background-size': hoverBackgroundSize
           }}
+          ref={this.element}
         />
         {caption}
       </React.Fragment>
