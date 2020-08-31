@@ -80,7 +80,7 @@ export default class extends React.Component {
 
       if (this.props.rooms.length === 0) {
         rooms.push(
-          <p className="rooms-content-paragraph">
+          <p className="rooms-content-paragraph" key="n">
             К сожалению, мы не нашли номеров :(
           </p>
         );
@@ -93,15 +93,9 @@ export default class extends React.Component {
         ];
 
         for (let i = 0; i < this.props.rooms.length; i += 1) {
-          let style = this.state.firstTime ? 
-            {
-              animationDelay: (100 * i) + 'ms',
-              animationName: animations[i % animations.length]
-            } :
-            null;
           if (this.state.chosenIndex === i) {
             rooms.push(
-              <div className="rooms-content-node chosen">
+              <div className="rooms-content-node chosen" key={i}>
                 <h3 className="rooms-content-node-name">
                   {this.props.rooms[i].name}
                 </h3>
@@ -111,11 +105,16 @@ export default class extends React.Component {
               </div>
             );
           } else {
+            let style = {
+              animationDelay: `${100 * i}ms`
+            };
+
             rooms.push(
               <div
                 className="rooms-content-node"
                 onClick={this.choose}
                 style={style}
+                key={i}
               >
                 <h3 className="rooms-content-node-name">
                   {this.props.rooms[i].name}
@@ -128,8 +127,6 @@ export default class extends React.Component {
           }
         }
       }
-
-      this.state.firstTime = false;
     } else {
       firstButton = null;
     }

@@ -130,12 +130,16 @@ class Aside extends React.Component {
           className={"aside-toggle" + (this.props.opened ? " opened" : "")}
           onClick={this.toggle}
         >
-          <div className="aside-toggle-bar" />
-          <div className="aside-toggle-bar" />
-          <div className="aside-toggle-bar" />
-          <p className="aside-toggle-caption">
-            Меню
-          </p>
+          <div className="contents">
+            <div className="aside-toggle-bars">
+              <div className="aside-toggle-bars-bar" />
+              <div className="aside-toggle-bars-bar" />
+              <div className="aside-toggle-bars-bar" />
+            </div>
+            <p className="aside-toggle-caption">
+              Меню
+            </p>
+          </div>
         </button>
         <aside>
           <nav>

@@ -24,8 +24,8 @@
       border-style: solid;
       border-color: rgba(white, .2);
       transition: border-color .3s ease, transform .3s ease;
+      animation-name: goDown;
       animation-duration: 1s;
-      animation-timing-function: ease;
 
       &.chosen {
         border-color: white;
@@ -82,30 +82,6 @@
 @keyframes goDown {
   from {
     transform: translateY(-100vh);
-  } to {
-    transform: none;
-  }
-}
-
-@keyframes goLeft {
-  from {
-    transform: translateX(100vw);
-  } to {
-    transform: none;
-  }
-}
-
-@keyframes goUp {
-  from {
-    transform: translateY(100vh);
-  } to {
-    transform: none;
-  }
-}
-
-@keyframes goRight {
-  from {
-    transform: translateX(-100vw);
   } to {
     transform: none;
   }
